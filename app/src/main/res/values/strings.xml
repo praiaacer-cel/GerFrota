@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GerFrota</string>
+    
+    <!-- Strings de interface e avisos -->
+    <string name="banner_offline">100% Offline e Privado. Seus dados não saem do celular.</string>
+    <string name="btn_salvar">SALVAR</string>
+    <string name="btn_cancelar">CANCELAR</string>
+</resources>
