@@ -1,7 +1,7 @@
 // app/build.gradle.kts
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    // ❌ NÃO COLOQUE O kotlin-android AQUI (O Flutter já aplica automaticamente)
     alias(libs.plugins.kotlin.compose)
 }
 
