@@ -1,44 +1,58 @@
-name: GerFrotaLite Android CI
+name: GerFrota Android CI
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    
     steps:
-      - name: Checkout (com submodule llama.cpp)
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+    - name: Checkout do Código
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive # Essencial para baixar o llama.cpp corretamente
 
-      - name: JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
+    - name: Configurar JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
 
-      - name: Licencas + NDK + CMake
-        run: |
-          yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager "ndk;26.1.10909125" "cmake;3.22.1"
+    # OPÇÃO B: Cache do Gradle (Se você usa, mude o 'v2' para 'v3' para limpar)
+    - name: Cache do Gradle
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-v3
+        restore-keys: |
+          ${{ runner.os }}-gradle-
 
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}
+    # OPÇÃO A: Limpeza Forçada (Descomente se estiver usando Runner Self-Hosted)
+    # - name: Limpar cache corrompido
+    #   run: |
+    #     rm -rf ~/.gradle/caches/
+    #     rm -rf .gradle/
 
-      - name: Build APK debug
-        run: ./gradlew assembleDebug --no-daemon
+    - name: Configurar Flutter (Se aplicável)
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0' # Ajuste para a sua versão
+        channel: 'stable'
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: gerfrotalite-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+    - name: Permissão de execução para o Gradlew
+      run: chmod +x ./gradlew
+
+    - name: Build do APK (Debug)
+      run: ./gradlew assembleDebug --stacktrace
+
+    - name: Upload do APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug-apk
+        path: app/build/outputs/apk/debug/app-debug.apk
