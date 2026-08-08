@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<paths>
-    <external-path name="external" path="." />
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Mapeia o getExternalFilesDir(null) usado pelo PathHelper e BackupService -->
     <external-files-path name="external_files" path="." />
+    
+    <!-- Mapeia o filesDir interno do app (usado pelo ModelManager para a IA) -->
+    <files-path name="internal_files" path="." />
+    
+    <!-- Mapeia o cacheDir usado pelo AnexoHelper.criarArquivoCamera() -->
     <cache-path name="cache" path="." />
-    <external-cache-path name="external_cache" path="." />
-    <files-path name="files" path="." />
 </paths>
