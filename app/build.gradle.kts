@@ -1,8 +1,8 @@
 // app/build.gradle.kts
 plugins {
-    id("com.android.application") // SEM a versão, ele herda do settings.gradle.kts
-    id("kotlin-android")
-    id("dev.flutter.flutter-gradle-plugin")
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
