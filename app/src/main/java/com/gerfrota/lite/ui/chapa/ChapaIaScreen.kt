@@ -1,6 +1,8 @@
-// ui/ChapaIaScreen.kt
 package com.gerfrota.lite.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.*
@@ -17,19 +20,28 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import com.gerfrota.lite.ai.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChapaIaScreen(vm: ChapaIAViewModel, onBack: () -> Unit) {
+    val ctx = LocalContext.current
     val msgs by vm.messages.collectAsState()
     val status by vm.status.collectAsState()
     val gerando by vm.gerando.collectAsState()
     var input by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
+
+    // Configuração da Câmera e Arquivo temporário
+    val cameraFile = remember { java.io.File(ctx.cacheDir, "nota_${System.currentTimeMillis()}.jpg") }
+    val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
+        if (ok) vm.processarFoto(cameraFile.absolutePath)
+    }
 
     LaunchedEffect(msgs.size, msgs.lastOrNull()?.text?.length) {
         if (msgs.isNotEmpty()) listState.scrollToItem(msgs.size - 1)
@@ -71,13 +83,24 @@ fun ChapaIaScreen(vm: ChapaIAViewModel, onBack: () -> Unit) {
                         }
                     }
                     Row(Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        // Botão da Câmera
+                        FilledIconButton(onClick = { camera.launch(FileProvider
+                            .getUriForFile(ctx, "${ctx.packageName}.fileprovider", cameraFile)) },
+                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFF1976D2))) {
+                            Icon(Icons.Default.CameraAlt, null, tint = Color.White)
+                        }
+                        
+                        Spacer(Modifier.width(8.dp))
+                        
                         OutlinedTextField(
                             value = input, onValueChange = { input = it },
                             modifier = Modifier.weight(1f),
                             placeholder = { Text("Pergunte ou comande…") },
                             shape = RoundedCornerShape(24.dp),
                             enabled = !gerando, maxLines = 3)
+                            
                         Spacer(Modifier.width(8.dp))
+                        
                         FilledIconButton(
                             onClick = { vm.send(input); input = "" },
                             enabled = input.isNotBlank() && !gerando,
@@ -133,4 +156,3 @@ private fun Banner(texto: String, cor: Color) {
         Text(texto, fontSize = 12.sp)
     }
 }
-

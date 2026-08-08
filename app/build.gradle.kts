@@ -1,8 +1,8 @@
 // app/build.gradle.kts
 plugins {
-    id("com.android.application") version "8.7.3"
-    id("org.jetbrains.kotlin.android") version "2.0.21"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
+    id("com.android.application") // SEM a versão, ele herda do settings.gradle.kts
+    id("kotlin-android")
+    id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
@@ -15,21 +15,42 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-        ndk { abiFilters += "arm64-v8a" }   // llama.cpp roda melhor em ARM64
-        ndkVersion = "26.1.10909125"
+
+        ndk { 
+            abiFilters += listOf("arm64-v8a", "x86_64") 
+        }
+
         externalNativeBuild {
-            cmake { arguments += listOf("-DANDROID_STL=c++_shared", "-DGGML_NATIVE=OFF") }
+            cmake {
+                arguments += listOf("-DANDROID_STL=c++_shared", "-DGGML_NATIVE=OFF")
+            }
         }
     }
 
     externalNativeBuild {
-        cmake { path = file("src/main/cpp/CMakeLists.txt"); version = "3.22.1" }
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
-    buildFeatures { compose = true }
-    compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
-    kotlinOptions { jvmTarget = "17" }
-    aaptOptions { noCompress += listOf("gguf") }   // não comprimir o modelo
+    buildFeatures {
+        compose = true
+    }
+
+    // ⚠️ No AGP 9.x o "aaptOptions" foi substituído por "androidResources"
+    androidResources {
+        noCompress += listOf("gguf")
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 }
 
 dependencies {
@@ -44,4 +65,5 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation("com.google.mlkit:text-recognition:16.0.1")
 }

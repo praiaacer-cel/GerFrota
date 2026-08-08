@@ -84,39 +84,44 @@ class ChapaIAViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     // ---------------- OCR / FOTO DE NOTA ----------------
-    /** Foto de nota → OCR → (LLM ou fallback regex) → resposta + cadastro rápido. */
     fun processarFoto(path: String) {
-        if (_gerando.value) return
+        if (_gerando.value) return // Evita múltiplas requisições simultâneas
+        
         viewModelScope.launch(Dispatchers.IO) {
             add(Role.USER, "📷 Foto de nota/documento enviada.")
             val texto = ocr.lerImagem(path)
-            if (texto.isBlank()) { add(Role.IA, "Não consegui ler o texto da imagem."); return@launch }
-
-            if (_status.value != ModelStatus.PRONTO) {
-                // Fallback sem LLM: extrai TOTAL e DATA por regex (igual ao IaOcrProcessor Dart)
-                val total = Regex("R\\$\\s*[0-9][0-9.,]*").find(texto)?.value ?: "N/A"
-                val dataTxt = Regex("\\d{2}/\\d{2}/\\d{4}").find(texto)?.value ?: "N/A"
-                val local = Regex("(?i)(posto|oficina|loja)[:\\-]\\s*([^\\n|]+)").find(texto)?.groupValues?.get(2)?.trim() ?: "N/A"
-                add(Role.IA, "📄 Extraído da foto (modo simulado):\nDATA: $dataTxt | LOCAL: $local | TOTAL: $total\n\n" +
-                    "Digite, por exemplo: \"abasteci $total na placa CBA1234\" para eu cadastrar.")
-                return@launch
-            }
-            _gerando.value = true
-            add(Role.IA, "", loading = true)
-            val prompt = PromptBuilder.extrator(
-                "Você é um leitor de notas fiscais. Extraia: DATA: [data] | LOCAL: [nome] | TOTAL: [valor]. Se não achar, use N/A.",
-                texto)
-            engine.generate(prompt, 256, object : LlamaCppEngine.GenerateCallback {
-                override fun onToken(t: String) = _messages.update { l ->
-                    if (l.isEmpty()) l else l.dropLast(1) + ChatMsg(Role.IA, l.last().text + t)
+            
+            if (texto.isBlank()) {
+                add(Role.IA, "Não consegui ler o texto da imagem.")
+            } else {
+                // Fallback para modo simulado caso o modelo LLM não esteja carregado
+                if (_status.value != ModelStatus.PRONTO) {
+                    add(Role.IA, "Texto extraído (modo simulado):\n$texto")
+                    return@launch
                 }
-                override fun onComplete() {
-                    _messages.update { l ->
-                        if (l.isEmpty()) l else l.dropLast(1) + ChatMsg(Role.IA, limpar(l.last().text).ifBlank { texto })
+                
+                _gerando.value = true
+                add(Role.IA, "", loading = true)
+                
+                // Passa o texto sujo do OCR para o LLM extrair DATA/LOCAL/TOTAL e responder
+                val systemPrompt = "Você é um leitor de notas fiscais. Extraia: DATA: [data] | LOCAL: [nome] | TOTAL: [valor]. Se não achar, use N/A."
+                val prompt = PromptBuilder.extrator(systemPrompt, texto)
+                
+                // Reutiliza o fluxo de geração nativa do engine (substituindo gerarRespostaLlm)
+                engine.generate(prompt, 256, object : LlamaCppEngine.GenerateCallback {
+                    override fun onToken(t: String) = _messages.update { list ->
+                        if (list.isEmpty()) list else list.dropLast(1) +
+                            ChatMsg(Role.IA, list.last().text + t)
                     }
-                    _gerando.value = false
-                }
-            })
+                    override fun onComplete() {
+                        _messages.update { list ->
+                            if (list.isEmpty()) list else list.dropLast(1) +
+                                ChatMsg(Role.IA, limpar(list.last().text).ifBlank { texto })
+                        }
+                        _gerando.value = false
+                    }
+                })
+            }
         }
     }
 
@@ -145,38 +150,4 @@ class ChapaIAViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun limpar(t: String): String = t
-        .replace("<|im_start|>assistant", "")
-        .replace("<|im_end|>", "")
-        .replace("<|im_start|>", "")
-        .trim()
-
-    private suspend fun respondeIA(texto: String) {
-        _gerando.value = false
-        add(Role.IA, texto)
-    }
-
-    private fun iniciarCadastro(texto: String) {
-        fluxo = Fluxo.ABASTECIMENTO // Exemplo de inicialização
-        etapa = 0
-        dados.clear()
-        add(Role.IA, "Ok, vamos cadastrar. Qual é a placa do veículo?")
-    }
-
-    private fun continuarCadastro(texto: String) {
-        // Lógica para continuar o fluxo de cadastro guiado...
-        add(Role.IA, "Dados recebidos: $texto. Cadastro concluído (simulação).")
-        fluxo = null
-    }
-
-    private fun acaoRapida(texto: String): Boolean {
-        val placa = RX_PLACA.find(texto)?.value
-        val valor = RX_NUM.find(texto)?.value
-        
-        if (placa != null && valor != null && texto.lowercase().contains("abasteci")) {
-            add(Role.IA, "✅ Registrando abastecimento de R$ $valor na placa $placa... (Ação rápida executada)")
-            // Aqui você chamaria o repositório para salvar no banco
-            return true
-        }
-        return false
-    }
-}
+        .replace("
