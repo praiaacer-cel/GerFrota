@@ -17,6 +17,15 @@ jobs:
         submodules: recursive # Essencial para baixar o llama.cpp corretamente
         fetch-depth: 0        # 🚨 MÁGICA: Necessário para o CMake do llama.cpp ler o .git e gerar o build-info
 
+    # ✅ ADICIONE ESTE PASSO:
+    - name: Clone llama.cpp dependency
+      run: |
+        if [ ! -d "llama.cpp" ]; then
+          echo "Cloning llama.cpp..."
+          # O --depth 1 faz um clone raso, deixando o CI muito mais rápido
+          git clone --depth 1 https://github.com/ggerganov/llama.cpp.git llama.cpp
+        fi
+
     - name: Configurar JDK 17
       uses: actions/setup-java@v4
       with:
