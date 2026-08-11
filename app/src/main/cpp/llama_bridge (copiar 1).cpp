@@ -8,6 +8,7 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
+// Estrutura para manter os ponteiros nativos entre as chamadas JNI
 struct NativeHandle {
     llama_model* model;
     llama_context* ctx;
@@ -24,7 +25,7 @@ Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeInit(
     llama_backend_init();
     
     auto mparams = llama_model_default_params();
-    mparams.n_gpu_layers = 0; // Forçar CPU no Android para evitar problemas com Vulkan/CL
+    mparams.n_gpu_layers = 0; // Força uso de CPU (ideal para compatibilidade mobile)
     
     llama_model* model = llama_model_load_from_file(path, mparams);
     env->ReleaseStringUTFChars(jpath, path);
@@ -45,6 +46,7 @@ Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeInit(
         return 0;
     }
 
+    // Configuração do Sampler (Greedy para respostas diretas)
     auto sparams = llama_sampler_chain_default_params();
     llama_sampler* smpl = llama_sampler_chain_init(sparams);
     llama_sampler_chain_add(smpl, llama_sampler_init_greedy());
@@ -69,43 +71,44 @@ Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeGenerate(
     std::string prompt(p);
     env->ReleaseStringUTFChars(jprompt, p);
 
-    // 1. Limpar o cache KV (API nova)
-    llama_kv_cache_seq_rm(h->ctx, -1, -1, -1);
+    // 1. Limpeza do Cache KV (Correção Copilot)
+    llama_kv_cache_clear(h->ctx); 
+    /* Nota: Se o seu commit do llama.cpp for extremamente recente (2025+) e 
+       llama_kv_cache_clear der erro, use: llama_kv_self_clear(h->ctx); */
 
-    // 2. Obter o vocabulário (API nova)
+    // 2. Obter Vocabulário (Correção Copilot)
     const llama_vocab * vocab = llama_model_get_vocab(h->model);
 
-    // 3. Tokenizar
+    // 3. Tokenização do Prompt (Correção Copilot)
     std::vector<llama_token> tokens(prompt.size() + 64);
     int n = llama_tokenize(vocab, prompt.c_str(), (int) prompt.size(),
-                           tokens.data(), (int) tokens.size(), false, true);
+                           tokens.data(), (int) tokens.size(), false);
     if (n < 0) { 
         tokens.resize(-n);
         n = llama_tokenize(vocab, prompt.c_str(), (int) prompt.size(),
-                           tokens.data(), (int) tokens.size(), false, true); 
+                           tokens.data(), (int) tokens.size(), false); 
     }
     tokens.resize(n);
 
-    // 4. Processar o prompt em lotes
+    // Avaliar o prompt em lotes (batches)
     for (int i = 0; i < n; i += 512) {
         int cnt = std::min(512, n - i);
-        // API nova: llama_batch_get_one requer a posição (pos) como 3º argumento
-        if (llama_decode(h->ctx, llama_batch_get_one(tokens.data() + i, cnt, i)) != 0) {
+        if (llama_decode(h->ctx, llama_batch_get_one(tokens.data() + i, cnt)) != 0) {
             LOGE("Falha ao decodificar lote do prompt");
             env->CallVoidMethod(jcb, onComplete); 
             return;
         }
     }
 
-    // 5. Geração token por token
+    // Geração token-por-token com streaming para o Kotlin
     for (int i = 0; i < maxTokens; i++) {
         llama_token tok = llama_sampler_sample(h->sampler, h->ctx, -1);
         
-        // Verificar fim de geração (End-Of-Generation)
-        // Nota: Se o compilador reclamar aqui, troque 'h->model' por 'vocab'
-        if (llama_token_is_eog(h->model, tok)) break;
+        // 4. Verificar Fim de Geração (Correção Copilot)
+        if (llama_token_is_eog(vocab, tok)) break;
         
         char buf[256];
+        // 5. Converter Token para Texto (Correção Copilot)
         int32_t len = llama_token_to_piece(vocab, tok, buf, sizeof(buf), 0, true);
         if (len > 0) {
             jstring js = env->NewStringUTF(std::string(buf, len).c_str());
@@ -113,7 +116,7 @@ Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeGenerate(
             env->DeleteLocalRef(js);
         }
         
-        if (llama_decode(h->ctx, llama_batch_get_one(&tok, 1, n + i)) != 0) {
+        if (llama_decode(h->ctx, llama_batch_get_one(&tok, 1)) != 0) {
             LOGE("Falha ao decodificar token gerado");
             break;
         }

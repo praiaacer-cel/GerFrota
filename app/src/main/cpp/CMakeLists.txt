@@ -10,4 +10,9 @@ add_library(gerfrota_llama SHARED llama_bridge.cpp)
 target_include_directories(gerfrota_llama PRIVATE
     ${LLAMA_DIR}/include
     ${LLAMA_DIR}/ggml/include)
-target_link_libraries(gerfrota_llama llama android log)
+target_link_libraries(gerfrota_llama
+       llama
+       ggml
+       android
+       log
+   )
