@@ -17,94 +17,124 @@ struct NativeHandle {
 extern "C" JNIEXPORT jlong JNICALL
 Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeInit(
         JNIEnv* env, jobject, jstring jpath, jint n_ctx, jint n_threads) {
-    
+
     const char* path = env->GetStringUTFChars(jpath, nullptr);
     LOGI("Carregando modelo de: %s", path);
-    
+
     llama_backend_init();
-    
+
+    // Parâmetros do modelo
     auto mparams = llama_model_default_params();
-    mparams.n_gpu_layers = 0; // Forçar CPU no Android para evitar problemas com Vulkan/CL
-    
+    mparams.n_gpu_layers = 0;        // Forçar CPU no Android
+    mparams.vocab_only   = false;
+
     llama_model* model = llama_model_load_from_file(path, mparams);
     env->ReleaseStringUTFChars(jpath, path);
-    
+
     if (!model) {
         LOGE("Falha ao carregar o modelo GGUF");
+        llama_backend_free();
         return 0;
     }
-    
+
+    // Parâmetros do contexto
     auto cparams = llama_context_default_params();
-    cparams.n_ctx = n_ctx;
-    cparams.n_threads = n_threads;
-    
+    cparams.n_ctx          = n_ctx;
+    cparams.n_threads      = n_threads;
+    cparams.n_threads_batch = n_threads;  // IMPORTANTE: threads para batch
+    cparams.embeddings     = false;       // Modelo causal, não embedding
+
     llama_context* ctx = llama_init_from_model(model, cparams);
     if (!ctx) {
         LOGE("Falha ao criar o contexto");
         llama_model_free(model);
+        llama_backend_free();
         return 0;
     }
 
+    // Sampler chain
     auto sparams = llama_sampler_chain_default_params();
     llama_sampler* smpl = llama_sampler_chain_init(sparams);
     llama_sampler_chain_add(smpl, llama_sampler_init_greedy());
 
     auto* h = new NativeHandle{model, ctx, smpl};
-    LOGI("Modelo carregado com sucesso");
+    LOGI("Modelo carregado com sucesso (ctx=%d, threads=%d)", n_ctx, n_threads);
     return reinterpret_cast<jlong>(h);
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeGenerate(
         JNIEnv* env, jobject, jlong jh, jstring jprompt, jint maxTokens, jobject jcb) {
-    
-    auto* h = reinterpret_cast<NativeHandle*>(jh);
-    if (!h || !h->ctx || !h->model) return;
 
-    jclass cbCls   = env->GetObjectClass(jcb);
-    jmethodID onToken    = env->GetMethodID(cbCls, "onToken", "(Ljava/lang/String;)V");
+    auto* h = reinterpret_cast<NativeHandle*>(jh);
+    if (!h || !h->ctx || !h->model) {
+        env->CallVoidMethod(jcb, env->GetMethodID(
+            env->GetObjectClass(jcb), "onComplete", "()V"));
+        return;
+    }
+
+    jclass cbCls       = env->GetObjectClass(jcb);
+    jmethodID onToken  = env->GetMethodID(cbCls, "onToken", "(Ljava/lang/String;)V");
     jmethodID onComplete = env->GetMethodID(cbCls, "onComplete", "()V");
 
     const char* p = env->GetStringUTFChars(jprompt, nullptr);
     std::string prompt(p);
     env->ReleaseStringUTFChars(jprompt, p);
 
-    // 1. Limpar o cache KV (API nova)
-    llama_kv_cache_seq_rm(h->ctx, -1, -1, -1);
+    // 1. Limpar cache KV (API nova)
+    llama_kv_cache_clear(h->ctx);
 
-    // 2. Obter o vocabulário (API nova)
-    const llama_vocab * vocab = llama_model_get_vocab(h->model);
+    // 2. Obter vocabulário
+    const llama_vocab* vocab = llama_model_get_vocab(h->model);
+    if (!vocab) {
+        LOGE("Falha ao obter vocabulário");
+        env->CallVoidMethod(jcb, onComplete);
+        return;
+    }
 
-    // 3. Tokenizar
+    // 3. Tokenizar o prompt
     std::vector<llama_token> tokens(prompt.size() + 64);
-    int n = llama_tokenize(vocab, prompt.c_str(), (int) prompt.size(),
-                           tokens.data(), (int) tokens.size(), false, true);
-    if (n < 0) { 
+    int n = llama_tokenize(vocab, prompt.c_str(), (int32_t)prompt.size(),
+                           tokens.data(), (int32_t)tokens.size(),
+                           /*add_special=*/true, /*parse_special=*/true);
+    if (n < 0) {
         tokens.resize(-n);
-        n = llama_tokenize(vocab, prompt.c_str(), (int) prompt.size(),
-                           tokens.data(), (int) tokens.size(), false, true); 
+        n = llama_tokenize(vocab, prompt.c_str(), (int32_t)prompt.size(),
+                           tokens.data(), (int32_t)tokens.size(), true, true);
+    }
+    if (n < 0) {
+        LOGE("Falha ao tokenizar prompt");
+        env->CallVoidMethod(jcb, onComplete);
+        return;
     }
     tokens.resize(n);
 
-    // 4. Processar o prompt em lotes
-    for (int i = 0; i < n; i += 512) {
-        int cnt = std::min(512, n - i);
-        // API nova: llama_batch_get_one requer a posição (pos) como 3º argumento
-        if (llama_decode(h->ctx, llama_batch_get_one(tokens.data() + i, cnt, i)) != 0) {
-            LOGE("Falha ao decodificar lote do prompt");
-            env->CallVoidMethod(jcb, onComplete); 
+    // 4. Processar prompt em lotes (batch simples, posição = 0..n-1)
+    const int BATCH_SIZE = 512;
+    for (int i = 0; i < n; i += BATCH_SIZE) {
+        int cnt = std::min(BATCH_SIZE, n - i);
+        // ✅ API nova: apenas 2 parâmetros (tokens, n_tokens)
+        struct llama_batch batch = llama_batch_get_one(tokens.data() + i, cnt);
+        if (llama_decode(h->ctx, batch) != 0) {
+            LOGE("Falha ao decodificar lote do prompt (i=%d, cnt=%d)", i, cnt);
+            env->CallVoidMethod(jcb, onComplete);
             return;
         }
     }
 
     // 5. Geração token por token
+    //    IMPORTANTE: não podemos usar llama_batch_get_one aqui porque ele
+    //    sempre define pos=0. Precisamos construir o batch com a posição correta.
     for (int i = 0; i < maxTokens; i++) {
         llama_token tok = llama_sampler_sample(h->sampler, h->ctx, -1);
-        
-        // Verificar fim de geração (End-Of-Generation)
-        // Nota: Se o compilador reclamar aqui, troque 'h->model' por 'vocab'
-        if (llama_token_is_eog(h->model, tok)) break;
-        
+
+        // ✅ API nova: usa vocab ao invés de model
+        if (llama_vocab_is_eog(vocab, tok)) {
+            LOGI("Fim de geração (EOG) após %d tokens", i);
+            break;
+        }
+
+        // Converter token em string
         char buf[256];
         int32_t len = llama_token_to_piece(vocab, tok, buf, sizeof(buf), 0, true);
         if (len > 0) {
@@ -112,12 +142,27 @@ Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeGenerate(
             env->CallVoidMethod(jcb, onToken, js);
             env->DeleteLocalRef(js);
         }
-        
-        if (llama_decode(h->ctx, llama_batch_get_one(&tok, 1, n + i)) != 0) {
-            LOGE("Falha ao decodificar token gerado");
+
+        // ✅ Construir batch manual com posição correta (n + i)
+        struct llama_batch next_batch = llama_batch_init(1, 0, 1);
+        next_batch.token   [0] = tok;
+        next_batch.pos     [0] = n + i;       // posição absoluta real
+        next_batch.n_seq_id[0] = 1;
+        next_batch.seq_id  [0] = (llama_seq_id*)malloc(sizeof(llama_seq_id));
+        next_batch.seq_id  [0][0] = 0;
+        next_batch.logits  [0] = true;
+        next_batch.n_tokens = 1;
+
+        if (llama_decode(h->ctx, next_batch) != 0) {
+            LOGE("Falha ao decodificar token gerado (i=%d)", i);
+            free(next_batch.seq_id[0]);
+            llama_batch_free(next_batch);
             break;
         }
+        free(next_batch.seq_id[0]);
+        llama_batch_free(next_batch);
     }
+
     env->CallVoidMethod(jcb, onComplete);
 }
 
@@ -127,8 +172,8 @@ Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeFree(
     auto* h = reinterpret_cast<NativeHandle*>(jh);
     if (h) {
         if (h->sampler) llama_sampler_free(h->sampler);
-        if (h->ctx) llama_free(h->ctx);
-        if (h->model) llama_model_free(h->model);
+        if (h->ctx)     llama_free(h->ctx);
+        if (h->model)   llama_model_free(h->model);
         delete h;
     }
     llama_backend_free();
