@@ -145,9 +145,8 @@ class ChapaIAViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun limpar(t: String): String = t
-        .replace("<|im_start|>assistant", "")
-        .replace("<|im_end|>", "")
-        .replace("<|im_start|>", "")
+        .replace("\n", " ")
+        .replace("\\s+".toRegex(), " ")
         .trim()
 
     private suspend fun respondeIA(texto: String) {
