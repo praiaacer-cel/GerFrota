@@ -82,7 +82,7 @@ Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeGenerate(
     env->ReleaseStringUTFChars(jprompt, p);
 
     // 1. Limpar cache KV (API nova)
-    llama_kv_cache_clear(h->ctx);
+    llama_kv_cache_clear(h->ctx, 0, -1, -1);
 
     // 2. Obter vocabulário
     const llama_vocab* vocab = llama_model_get_vocab(h->model);
