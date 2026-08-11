@@ -1,4 +1,4 @@
-package com.gerfrota.lite.ui
+package com.gerfrota.lite.ui.motoristas
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

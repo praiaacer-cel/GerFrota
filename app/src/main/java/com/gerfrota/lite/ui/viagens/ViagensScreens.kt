@@ -1,5 +1,5 @@
 // ui/ViagensScreens.kt
-package com.gerfrota.lite.ui
+package com.gerfrota.lite.ui.viagens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

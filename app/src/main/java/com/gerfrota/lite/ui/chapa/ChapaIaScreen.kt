@@ -1,4 +1,4 @@
-package com.gerfrota.lite.ui
+package com.gerfrota.lite.ui.chapa
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts

@@ -1,5 +1,5 @@
 // ui/MotoristaScreens.kt
-package com.gerfrota.lite.ui
+package com.gerfrota.lite.ui.motoristas
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

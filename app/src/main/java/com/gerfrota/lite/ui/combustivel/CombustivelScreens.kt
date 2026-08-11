@@ -1,5 +1,5 @@
 // ui/CombustivelScreens.kt
-package com.gerfrota.lite.ui
+package com.gerfrota.lite.ui.combustivel
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
