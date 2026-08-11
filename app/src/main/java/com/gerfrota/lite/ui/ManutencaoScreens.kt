@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -27,24 +28,51 @@ fun ManutencaoListScreen(nav: NavController) {
     val ctx = LocalContext.current
     val db = remember { DatabaseHelper.get(ctx) }
     var veiculos by remember { mutableStateOf<List<Map<String, Any?>>>(emptyList()) }
+    
     LaunchedEffect(Unit) {
         kotlinx.coroutines.withContext(Dispatchers.IO) {
             veiculos = db.queryAll("frota", "placa ASC")
         }
     }
-    Scaffold(topBar = { TopAppBar(title = { Text("MANUTENÇÃO DOS VEÍCULOS") },
-        navigationIcon = { IconButton(onClick = { nav.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) } }) }) { pad ->
+    
+    Scaffold(
+        topBar = { 
+            TopAppBar(
+                title = { Text("MANUTENÇÃO DOS VEÍCULOS") },
+                navigationIcon = { 
+                    IconButton(onClick = { nav.popBackStack() }) { 
+                        Icon(Icons.Default.ArrowBack, null) 
+                    } 
+                }
+            ) 
+        }
+    ) { pad ->
         LazyColumn(Modifier.padding(pad).padding(12.dp)) {
             items(veiculos) { v ->
-                Card(Modifier.fillMaxWidth().padding(vertical = 5.dp)
-                    .clickable {
-                        val placa = db.str(v["placa"])
-                        val tipo = URLEncoder.encode(db.str(v["tipo_veiculo"]), "UTF-8")
-                        nav.navigate("manutencao_detail/$placa/$tipo")
-                    }) { ... }
-                    androidx.compose.foundation.ExperimentalFoundationApi
-                    // navegação ao tocar
-                    androidx.compose.ui.Modifier
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 5.dp)
+                        .clickable {
+                            val placa = db.str(v["placa"])
+                            val tipo = URLEncoder.encode(db.str(v["tipo_veiculo"]) ?: "", "UTF-8")
+                            nav.navigate("manutencao_detail/$placa/$tipo")
+                        }
+                ) {
+                    ListItem(
+                        headlineContent = { 
+                            Text(db.str(v["placa"]), fontWeight = FontWeight.Bold, fontSize = 16.sp) 
+                        },
+                        supportingContent = { 
+                            Text("${db.str(v["marca"])} ${db.str(v["modelo"])}") 
+                        },
+                        leadingContent = { 
+                            Icon(Icons.Default.Build, null, tint = Color(0xFF1976D2)) 
+                        },
+                        trailingContent = { 
+                            Icon(Icons.Default.ChevronRight, null) 
+                        }
+                    )
                 }
             }
         }

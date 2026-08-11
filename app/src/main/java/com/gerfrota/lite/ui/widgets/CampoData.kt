@@ -1,9 +1,9 @@
 package com.gerfrota.lite.ui.widgets
 
 import android.app.DatePickerDialog
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
