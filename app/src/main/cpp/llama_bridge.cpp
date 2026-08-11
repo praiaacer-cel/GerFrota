@@ -81,8 +81,8 @@ Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeGenerate(
     std::string prompt(p);
     env->ReleaseStringUTFChars(jprompt, p);
 
-    // 1. Limpar cache KV (API nova)
-    llama_kv_cache_clear(h->ctx, 0, -1, -1);
+    // 1. Limpar cache KV (API NOVA: Substitui llama_kv_cache_clear)
+    llama_memory_clear(llama_get_memory(h->ctx), true);
 
     // 2. Obter vocabulário
     const llama_vocab* vocab = llama_model_get_vocab(h->model);
@@ -113,7 +113,7 @@ Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeGenerate(
     const int BATCH_SIZE = 512;
     for (int i = 0; i < n; i += BATCH_SIZE) {
         int cnt = std::min(BATCH_SIZE, n - i);
-        // ✅ API nova: apenas 2 parâmetros (tokens, n_tokens)
+        // API: llama_batch_get_one não aloca memória, apenas aponta para o array
         struct llama_batch batch = llama_batch_get_one(tokens.data() + i, cnt);
         if (llama_decode(h->ctx, batch) != 0) {
             LOGE("Falha ao decodificar lote do prompt (i=%d, cnt=%d)", i, cnt);
@@ -123,12 +123,10 @@ Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeGenerate(
     }
 
     // 5. Geração token por token
-    //    IMPORTANTE: não podemos usar llama_batch_get_one aqui porque ele
-    //    sempre define pos=0. Precisamos construir o batch com a posição correta.
     for (int i = 0; i < maxTokens; i++) {
         llama_token tok = llama_sampler_sample(h->sampler, h->ctx, -1);
 
-        // ✅ API nova: usa vocab ao invés de model
+        // Verifica Fim de Geração (End of Generation)
         if (llama_vocab_is_eog(vocab, tok)) {
             LOGI("Fim de geração (EOG) após %d tokens", i);
             break;
@@ -143,23 +141,24 @@ Java_com_gerfrota_lite_ai_LlamaCppEngine_nativeGenerate(
             env->DeleteLocalRef(js);
         }
 
-        // ✅ Construir batch manual com posição correta (n + i)
+        // Construir batch manual com posição correta (n + i)
         struct llama_batch next_batch = llama_batch_init(1, 0, 1);
         next_batch.token   [0] = tok;
         next_batch.pos     [0] = n + i;       // posição absoluta real
         next_batch.n_seq_id[0] = 1;
-        next_batch.seq_id  [0] = (llama_seq_id*)malloc(sizeof(llama_seq_id));
+        
+        // CORREÇÃO: llama_batch_init já aloca seq_id[0]. Não use malloc!
         next_batch.seq_id  [0][0] = 0;
         next_batch.logits  [0] = true;
         next_batch.n_tokens = 1;
 
         if (llama_decode(h->ctx, next_batch) != 0) {
             LOGE("Falha ao decodificar token gerado (i=%d)", i);
-            free(next_batch.seq_id[0]);
+            // CORREÇÃO: llama_batch_free cuida de liberar todas as matrizes internas
             llama_batch_free(next_batch);
             break;
         }
-        free(next_batch.seq_id[0]);
+        // CORREÇÃO: Sem free manual, apenas o free oficial da struct
         llama_batch_free(next_batch);
     }
 
