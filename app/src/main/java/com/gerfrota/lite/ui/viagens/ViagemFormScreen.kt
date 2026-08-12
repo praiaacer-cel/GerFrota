@@ -176,12 +176,12 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
 
     fun atualizarProntuario() {
         val viagens = db.queryAll("viagens").filter { db.str(it["unidade_id"]) == unidadeId.toString() }
-        .sortedBy { db.str(it["nro_viagem"]) }
+            .sortedBy { db.str(it["nro_viagem"]) }
         // ✅ Bússola centralizada (substitui pastaDestino + mkdirs + File(...))
         val f = PathHelper.prontuarioViagem(
             ctx,
-            db.str(conjunto?.get("modelo")),
-            db.str(conjunto?.get("placas"))
+            db.str(conjunto?.get("modelo")).ifBlank { "SemModelo" },
+            db.str(conjunto?.get("placas")).ifBlank { "SemPlaca" }
         )
         val sb = StringBuilder()
         viagens.forEach { v ->

@@ -22,7 +22,7 @@ object PdfMergeHelper {
                         renderer.openPage(i).use { page ->
                             val bmp = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
                             bmp.eraseColor(android.graphics.Color.WHITE)
-                            page.render(bmp, null, null, android.graphics.pdf.PdfRenderer.Page.RENDER_MODE_DISPLAY)
+                            page.render(bmp, null, null, android.graphics.pdf.PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                             page.close()
                             val info = PdfDocument.PageInfo.Builder(bmp.width, bmp.height, pageNum++).create()
                             val p = out.startPage(info)

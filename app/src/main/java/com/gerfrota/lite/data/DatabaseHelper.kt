@@ -212,8 +212,9 @@ class DatabaseHelper private constructor(ctx: Context) :
         val limite = java.util.Calendar.getInstance().apply { add(java.util.Calendar.DAY_OF_YEAR, dias) }
         fun checa(dataStr: String?, descr: String) {
             val d = parseDataBR(dataStr) ?: return
-            if (!d.before(hoje) && d.before(limite)) out += "$descr vence em ${dataStr.take(10)}"
-            else if (d.before(hoje)) out += "$descr VENCIDO em ${dataStr.take(10)}"
+            val dataFmt = dataStr?.take(10) ?: ""
+            if (!d.before(hoje) && d.before(limite)) out += "$descr vence em $dataFmt"
+            else if (d.before(hoje)) out += "$descr VENCIDO em $dataFmt"
         }
         queryAll("frota").forEach { v ->
             checa(str(v["vencimento_antt"]).ifBlank { null }, "ANTT ${v["placa"]}")
