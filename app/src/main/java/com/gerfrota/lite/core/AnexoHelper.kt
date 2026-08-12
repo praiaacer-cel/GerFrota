@@ -8,16 +8,20 @@ import java.io.File
 
 object AnexoHelper {
     /** Copia um Uri (galeria/arquivo) para o destino. Retorna true se ok. */
-    fun copiarUri(ctx: Context, uri: Uri, destino: File): Boolean = try {
-        ctx.contentResolver.openInputStream(uri)?.use { inp ->
-            destino.outputStream().use { out -> inp.copyTo(out) }
-        } ?: return false
-        true
-    } catch (e: Exception) { false }
+    fun copiarUri(ctx: Context, uri: Uri, destino: File): Boolean {
+        return try {
+            ctx.contentResolver.openInputStream(uri)?.use { inp ->
+                destino.outputStream().use { out -> inp.copyTo(out) }
+            } ?: return false
+            true
+        } catch (e: Exception) { 
+            false 
+        }
+    }
 
     /** Cria arquivo temporário p/ câmera e retorna (File, Uri do FileProvider). */
     fun criarArquivoCamera(ctx: Context): Pair<File, Uri> {
-        val f = PathHelper.arquivoTemporario(ctx, "camera", "jpg")   // ✅ era File(ctx.cacheDir, ...)
+        val f = PathHelper.arquivoTemporario(ctx, "camera", "jpg")
         val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.fileprovider", f)
         return f to uri
     }

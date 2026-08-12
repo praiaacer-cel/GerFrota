@@ -61,10 +61,15 @@ object EstruturaManutencao {
             t.contains("truck") || t.contains("trucado") -> mapBase(listOf("Lona Tração Esq.",
                 "Lona Tração Dir.", "Lona Truck Esq.", "Lona Truck Dir."))
             t.contains("reboque") -> {
-                val eixos = when { t.contains("4") -> 4; t.contains("3") -> 3;
-                    t.contains("2") -> 2; else -> 1 }
-                val lonas = (1..eixos).flatMap { listOf("Lona $iº Eixo Esq.".replace("\$i", it.toString()),
-                    "Lona ${it}º Eixo Dir.") }
+                val eixos = when { 
+                    t.contains("4") -> 4
+                    t.contains("3") -> 3
+                    t.contains("2") -> 2
+                    else -> 1 
+                }
+                val lonas = (1..eixos).flatMap { i -> 
+                    listOf("Lona ${i}º Eixo Esq.", "Lona ${i}º Eixo Dir.") 
+                }
                 mapBase(lonas, semi = true)
             }
             else -> mapBase(listOf("Lona Tração Esq.", "Lona Tração Dir."))

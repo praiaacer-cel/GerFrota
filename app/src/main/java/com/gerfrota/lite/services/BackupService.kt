@@ -1,4 +1,3 @@
-// services/BackupService.kt
 package com.gerfrota.lite.services
 
 import android.content.Context
@@ -11,7 +10,6 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 object BackupService {
-
     private val pastas = listOf(
         "Abastecimentoarla", "Abastecimentocombustivel", "BancodeDados", "CardsManutencao",
         "CargasdosMotoristas", "CNHdosMotoristas", "DocumentosGerFrota", "DocumentosVeiculos",
@@ -21,8 +19,8 @@ object BackupService {
     )
 
     /** Compacta banco + todas as pastas de documentos em um único .zip */
-    fun criarBackupCompactado(context: Context): File? = criarBackup(context)
-        val base = PathHelper.base(context)   // ✅ era context.getExternalFilesDir(null) ?: context.filesDir
+    fun criarBackupCompactado(context: Context): File? {
+        val base = PathHelper.base(context)
         val ts = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val zipFile = File(base, "backup_gerfrota_$ts.zip")
         return try {
@@ -41,7 +39,8 @@ object BackupService {
             }
             zipFile
         } catch (e: Exception) {
-            e.printStackTrace(); null
+            e.printStackTrace()
+            null
         }
     }
 
