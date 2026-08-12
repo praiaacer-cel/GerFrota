@@ -13,13 +13,16 @@ jobs:
     steps:
       - name: 📥 Checkout do código
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
 
       - name: ☕ Configurar JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'gradle' # Cache automático das dependências do app
+          cache: 'gradle'
 
       - name: 📦 Cache do Gradle Wrapper (Previne o erro 503)
         uses: actions/cache@v4
@@ -35,10 +38,23 @@ jobs:
 
       - name: 🛠️ Build do APK (com lógica de retry para falhas de rede)
         run: |
-          echo "Iniciando build do APK..."
-          # Tenta executar o build até 3 vezes. Se der erro 503, espera 15s e tenta de novo.
+          SUCCESS=0
           for i in 1 2 3; do
-            ./gradlew assembleDebug --stacktrace --no-daemon && break
-            echo "⚠️ Falha na tentativa $i (possível erro 503 de rede). Aguardando 15 segundos..."
+            if ./gradlew assembleDebug --stacktrace --no-daemon; then
+              SUCCESS=1
+              break
+            fi
+            echo "⚠️ Falha na tentativa $i. Aguardando 15 segundos..."
             sleep 15
           done
+          if [ $SUCCESS -ne 1 ]; then
+            echo "❌ Build falhou nas 3 tentativas."
+            exit 1
+          fi
+
+      - name: 📤 Upload do APK (gera a seção Artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
