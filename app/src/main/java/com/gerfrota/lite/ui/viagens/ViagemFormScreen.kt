@@ -19,9 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gerfrota.lite.data.DatabaseHelper
+import com.gerfrota.lite.core.PathHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File // ✅ Passo A: Import garantido
 
 private class ItemFin(sn: String = "NÃO") {
     var simNao by mutableStateOf(sn)
@@ -176,13 +176,13 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
 
     fun atualizarProntuario() {
         val viagens = db.queryAll("viagens").filter { db.str(it["unidade_id"]) == unidadeId.toString() }
-            .sortedBy { db.str(it["nro_viagem"]) }
-        val nome = "Viagem_${db.str(conjunto?.get("modelo"))}_${db.str(conjunto?.get("placas")).replace('/', '-')}.txt"
-        
-        // 🔧 CORREÇÃO APLICADA AQUI (Passo B):
-        val pastaDestino = File(db.baseDir(), "ProntuarioViagens").apply { mkdirs() }
-        val f = File(pastaDestino, nome)
-        
+        .sortedBy { db.str(it["nro_viagem"]) }
+        // ✅ Bússola centralizada (substitui pastaDestino + mkdirs + File(...))
+        val f = PathHelper.prontuarioViagem(
+            ctx,
+            db.str(conjunto?.get("modelo")),
+            db.str(conjunto?.get("placas"))
+        )
         val sb = StringBuilder()
         viagens.forEach { v ->
             sb.appendLine("=== VIAGEM NRO: ${v["nro_viagem"]} ===")

@@ -2,6 +2,7 @@
 package com.gerfrota.lite.ai
 
 import android.content.Context
+import com.gerfrota.lite.core.PathHelper
 import java.io.File
 
 object ModelManager {
@@ -9,10 +10,11 @@ object ModelManager {
 
     /** Procura o modelo em vários locais; se existir em assets, copia para storage interno. */
     fun resolve(context: Context): File? {
-        val candidatos = listOf(
-            File(context.filesDir, "models/$MODEL_NAME"),
-            File(context.getExternalFilesDir(null), "models/$MODEL_NAME")
-        )
+        val dirModelos = PathHelper.pastaModelosIA(context)
+        val candidatos = listOf(                              // ✅ fechar o listOf
+            File(dirModelos, MODEL_NAME),
+            File(PathHelper.base(context), "models/$MODEL_NAME")
+        )                                                     // ← este ")" estava faltando
         for (c in candidatos) if (c.exists() && c.length() > 10_000_000) return c
         return try {
             val dest = candidatos[0].also { it.parentFile?.mkdirs() }

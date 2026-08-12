@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.gerfrota.lite.core.EstruturaManutencao
 import com.gerfrota.lite.data.DatabaseHelper
+import com.gerfrota.lite.core.PathHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
@@ -80,17 +81,17 @@ fun ManutencaoFormScreen(
     }
 
     val pickNota = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            scope.launch(Dispatchers.IO) {
-                val pasta = File(db.baseDir(), "NotasdosServicos").apply { mkdirs() }
-                val ext = ctx.contentResolver.getType(it)?.substringAfter('/') ?: "jpg"
-                val nome = "${placa}_${nf.ifBlank { "SEM_NOTA" }}.$ext"
-                val dest = File(pasta, nome)
-                ctx.contentResolver.openInputStream(it)?.use { inp -> dest.outputStream().use { o -> inp.copyTo(o) } }
-                pathNota = dest.absolutePath
-            }
-        }
-    }
+       uri?.let {
+           scope.launch(Dispatchers.IO) {
+               val pasta = PathHelper.pastaNotasServicos(ctx)          // ✅ era File(db.baseDir(), "NotasdosServicos")
+               val ext = ctx.contentResolver.getType(it)?.substringAfter('/') ?: "jpg"
+               val nome = "${placa}_${nf.ifBlank { "SEM_NOTA" }}.$ext"
+               val dest = File(pasta, nome)
+               ctx.contentResolver.openInputStream(it)?.use { inp -> dest.outputStream().use { o -> inp.copyTo(o) } }
+               pathNota = dest.absolutePath
+           }
+       }
+   }
 
     fun salvar() = scope.launch(Dispatchers.IO) {
         val valorDouble = DatabaseHelper.parseMoney(valor)
@@ -144,7 +145,7 @@ fun ManutencaoFormScreen(
         val os = idOS.toString().padStart(5, '0')
         val bloco = "OS: $os\nData: $data | KM: $km | $sistema - $subsistema\n" +
             "Serviço: $tipoServico | Obs: $obs\nValor: $valorDb | Prestador: $prestador | Nota: $nf\n"
-        val f = File(File(db.baseDir(), "ProntuarioPlaca").apply { mkdirs() }, "${placa}_prontuario.txt")
+        val f = PathHelper.prontuarioPlaca(ctx, placa)   // ✅ era File(File(db.baseDir(), "ProntuarioPlaca")...)
         val sep = "-".repeat(60) + "\n"
         val existentes = if (f.exists()) f.readText().split(sep).map { it.trim() }
             .filter { it.isNotEmpty() && !it.contains("OS: $os") } else emptyList()

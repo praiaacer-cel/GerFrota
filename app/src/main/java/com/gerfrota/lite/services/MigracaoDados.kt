@@ -2,6 +2,7 @@
 package com.gerfrota.lite.services
 
 import android.content.Context
+import com.gerfrota.lite.core.PathHelper
 import java.io.File
 
 /**
@@ -11,7 +12,7 @@ import java.io.File
  */
 object MigracaoDados {
     fun importarSeNecessario(context: Context) {
-        val base = context.getExternalFilesDir(null) ?: return
+        val base = PathHelper.base(context)   // ✅ era getExternalFilesDir(null) ?: return
         val origem = File(base, "BancodeDados/gerfrotalite.db")
         val destino = context.getDatabasePath("gerfrotalite.db")
         if (origem.exists() && origem.length() > 0 && !destino.exists()) {

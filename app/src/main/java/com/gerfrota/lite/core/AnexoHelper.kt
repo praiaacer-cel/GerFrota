@@ -17,7 +17,7 @@ object AnexoHelper {
 
     /** Cria arquivo temporário p/ câmera e retorna (File, Uri do FileProvider). */
     fun criarArquivoCamera(ctx: Context): Pair<File, Uri> {
-        val f = File(ctx.cacheDir, "camera_${System.currentTimeMillis()}.jpg")
+        val f = PathHelper.arquivoTemporario(ctx, "camera", "jpg")   // ✅ era File(ctx.cacheDir, ...)
         val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.fileprovider", f)
         return f to uri
     }

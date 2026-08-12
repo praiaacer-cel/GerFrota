@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.gerfrota.lite.ai.*
+import com.gerfrota.lite.core.PathHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +39,7 @@ fun ChapaIaScreen(vm: ChapaIAViewModel, onBack: () -> Unit) {
     val listState = rememberLazyListState()
 
     // Configuração da Câmera e Arquivo temporário
-    val cameraFile = remember { java.io.File(ctx.cacheDir, "nota_${System.currentTimeMillis()}.jpg") }
+    val cameraFile = remember { PathHelper.arquivoTemporario(ctx, "nota", "jpg") }
     val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
         if (ok) vm.processarFoto(cameraFile.absolutePath)
     }

@@ -6,6 +6,7 @@ import android.graphics.*
 import android.graphics.pdf.PdfDocument
 import androidx.core.content.FileProvider
 import com.gerfrota.lite.data.DatabaseHelper
+import com.gerfrota.lite.core.PathHelper
 import java.io.File
 
 /** Writer simples multi-página sobre android.graphics.pdf.PdfDocument. */
@@ -64,7 +65,7 @@ object PdfService {
     private const val A6W = 297; private const val A6H = 419
 
     private fun pasta(ctx: Context, vararg sub: String) =
-        File(DatabaseHelper.get(ctx).baseDir(), listOf("DocumentosGerFrota") .plus(sub).joinToString("/"))
+        File(PathHelper.pastaDocumentosGerFrota(ctx), sub.joinToString("/"))
 
     // ✅ NOVA FUNÇÃO: Formatação de moeda
     private fun fmt(v: Double) = com.gerfrota.lite.data.DatabaseHelper.fmtBRL(v)
@@ -80,7 +81,7 @@ object PdfService {
         wp.linha("Valor", db.str(m["valor_servico"])); wp.linha("Nota", db.str(m["numero_nota"]))
         wp.texto("Obs: ${db.str(m["observacao"]).ifBlank { "-" }}")
         val nome = "Manutencao_${placa}_${db.str(m["data_servico"]).replace("/", "")}.pdf"
-        val f = File(File(db.baseDir(), "CardsManutencao"), nome)
+        val f = File(PathHelper.pastaCardsManutencao(ctx), nome)
         wp.salvar(f); return f
     }
 
@@ -97,7 +98,7 @@ object PdfService {
         wp.linha("Venc. Licenciamento", db.str(v["vencimento_licenciamento"]))
         wp.linha("ANTT", db.str(v["antt"])); wp.linha("Venc. ANTT", db.str(v["vencimento_antt"]))
         wp.linha("Qtd. Pneus", db.str(v["quantidade_pneus"])); wp.linha("Observações", db.str(v["observacao"]))
-        val f = File(pasta(ctx, "Veiculos"), "${db.str(v["placa"]).uppercase()}_FICHA.pdf")
+        val f = File(PathHelper.pastaFichasVeiculos(ctx), "${db.str(v["placa"]).uppercase()}_FICHA.pdf")
         wp.salvar(f); return f
     }
 
@@ -119,7 +120,7 @@ object PdfService {
         wp.linha("Ag/Conta", "${db.str(m["agencia"])}/${db.str(m["conta"])}")
         wp.linha("PIX", db.str(m["chave_pix1"])); wp.linha("Comissão", "${db.str(m["comissao"])}%")
         val nome = db.str(m["nome"]).replace(" ", "_").uppercase()
-        val f = File(pasta(ctx, "Motoristas"), "${nome}_FICHA.pdf")
+        val f = File(PathHelper.pastaFichasMotoristas(ctx), "${nome}_FICHA.pdf")
         wp.salvar(f); return f
     }
 
@@ -134,7 +135,7 @@ object PdfService {
         }
         wp.secao("TOTAL DAS COMISSÕES LÍQUIDAS"); wp.texto(totalLiquido)
         val nome = nomeMotorista.replace(" ", "_").uppercase()
-        val f = File(pasta(ctx, "AcertosMotoristas"), "${nome}_ACERTO.pdf")
+        val f = File(PathHelper.pastaAcertosMotoristas(ctx), "${nome}_ACERTO.pdf")
         wp.salvar(f); return f
     }
 
@@ -154,7 +155,7 @@ object PdfService {
         wp.linha("Total Despesas", fmt(db.num(v["resumo_despesas"])))
         wp.linha("Saldos a Receber", fmt(db.num(v["total_saldos"])))
         wp.linha("VALOR LÍQUIDO", fmt(db.num(v["valor_liquido"])))
-        val f = File(File(db.baseDir(), "ViagensFretes"),
+        val f = File(PathHelper.pastaViagensFretes(ctx),
             "Viagem_${v["nro_viagem"]}_${db.str(v["data_carga"]).replace("/", "")}.pdf")
         wp.salvar(f); return f
     }

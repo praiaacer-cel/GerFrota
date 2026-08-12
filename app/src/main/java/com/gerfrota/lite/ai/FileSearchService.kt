@@ -2,12 +2,13 @@
 package com.gerfrota.lite.ai
 
 import android.content.Context
+import com.gerfrota.lite.core.PathHelper
 import java.io.File
 
 /** Busca nos arquivos jpg/png/bmp/pdf/txt das pastas do GerFrotaLite. */
 class FileSearchService(private val context: Context) {
 
-    val baseDir: File get() = context.getExternalFilesDir(null) ?: context.filesDir
+    val baseDir: File get() = PathHelper.base(context)   // ✅ era getExternalFilesDir(null) ?: filesDir
 
     val pastas = listOf(
         "FotosVeiculos", "DocumentosVeiculos", "CNHdosMotoristas", "FotosdosMotoristas",

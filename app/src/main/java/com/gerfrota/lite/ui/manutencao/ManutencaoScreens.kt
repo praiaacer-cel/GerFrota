@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.gerfrota.lite.data.DatabaseHelper
 import com.gerfrota.lite.services.PdfService
+import com.gerfrota.lite.core.PathHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
@@ -96,7 +97,8 @@ fun ManutencaoDetailScreen(placa: String, tipo: String, nav: NavController) {
         db.str(m["caminho_nota_arquivo"]).let { if (it.isNotEmpty()) File(it).delete() }
         db.delete("manutencoes", id)
         // remove o bloco da OS no prontuário
-        val f = File(File(db.baseDir(), "ProntuarioPlaca"), "${placa}_prontuario.txt")
+        // remove o bloco da OS no prontuário
+        val f = PathHelper.prontuarioPlaca(ctx, placa)   // ✅ era File(File(db.baseDir(), "ProntuarioPlaca"), ...)
         if (f.exists()) {
             val os = id.toString().padStart(5, '0')
             val blocos = f.readText().split("-".repeat(60) + "\n")

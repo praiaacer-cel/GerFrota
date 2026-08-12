@@ -2,6 +2,7 @@
 package com.gerfrota.lite.services
 
 import android.content.Context
+import com.gerfrota.lite.core.PathHelper
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -20,8 +21,8 @@ object BackupService {
     )
 
     /** Compacta banco + todas as pastas de documentos em um único .zip */
-    fun criarBackup(context: Context): File? {
-        val base = context.getExternalFilesDir(null) ?: context.filesDir
+    fun criarBackupCompactado(context: Context): File? = criarBackup(context)
+        val base = PathHelper.base(context)   // ✅ era context.getExternalFilesDir(null) ?: context.filesDir
         val ts = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val zipFile = File(base, "backup_gerfrota_$ts.zip")
         return try {

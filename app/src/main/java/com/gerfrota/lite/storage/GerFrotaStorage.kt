@@ -2,6 +2,7 @@ package com.gerfrota.lite.storage
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import com.gerfrota.lite.core.PathHelper
 import java.io.File
 import java.io.FileNotFoundException
 
@@ -18,45 +19,14 @@ object GerFrotaStorage {
      * Retorna:
      * /Android/data/com.gerfrota.lite/files/
      */
-    fun baseDir(context: Context): File {
-        return context.getExternalFilesDir(null)
-            ?: throw IllegalStateException("Não foi possível obter getExternalFilesDir(null)")
-    }
-
-    /**
-     * Retorna:
-     * /Android/data/com.gerfrota.lite/files/BancodeDados/gerfrotalite.db
-     */
-    fun dbFile(context: Context): File {
-        val base = baseDir(context)
-        return File(base, "$DB_DIR/$DB_NAME")
-    }
-
-    fun fotosVeiculosDir(context: Context): File {
-        val dir = File(baseDir(context), DIR_FOTOS_VEICULOS)
-        dir.mkdirs()
-        return dir
-    }
-
-    fun cnhMotoristasDir(context: Context): File {
-        val dir = File(baseDir(context), DIR_CNH_MOTORISTAS)
-        dir.mkdirs()
-        return dir
-    }
-
-    fun prontuarioPlacaDir(context: Context): File {
-        val dir = File(baseDir(context), DIR_PRONTUARIO_PLACA)
-        dir.mkdirs()
-        return dir
-    }
-
+    fun dbFile(context: Context): File = File(PathHelper.base(context), "$DB_DIR/$DB_NAME")
+    fun baseDir(context: Context): File = PathHelper.base(context)          // ✅ não lança mais exceção
+    fun fotosVeiculosDir(context: Context): File = PathHelper.pastaFotosVeiculos(context)
+    fun cnhMotoristasDir(context: Context): File = PathHelper.pastaCNH(context)
+    fun prontuarioPlacaDir(context: Context): File = PathHelper.pasta(context, "ProntuarioPlaca")
     fun ensureBaseDirs(context: Context) {
-        val base = baseDir(context)
-
-        File(base, DB_DIR).mkdirs()
-        File(base, DIR_FOTOS_VEICULOS).mkdirs()
-        File(base, DIR_CNH_MOTORISTAS).mkdirs()
-        File(base, DIR_PRONTUARIO_PLACA).mkdirs()
+        PathHelper.base(context); PathHelper.pastaFotosVeiculos(context)
+        PathHelper.pastaCNH(context); PathHelper.pasta(context, "ProntuarioPlaca")
     }
 
     /**
