@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment // ✅ Passo A: Import adicionado
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -20,7 +21,7 @@ import androidx.navigation.NavController
 import com.gerfrota.lite.data.DatabaseHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
+import java.io.File // ✅ Passo A: Import garantido
 
 private class ItemFin(sn: String = "NÃO") {
     var simNao by mutableStateOf(sn)
@@ -177,7 +178,11 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
         val viagens = db.queryAll("viagens").filter { db.str(it["unidade_id"]) == unidadeId.toString() }
             .sortedBy { db.str(it["nro_viagem"]) }
         val nome = "Viagem_${db.str(conjunto?.get("modelo"))}_${db.str(conjunto?.get("placas")).replace('/', '-')}.txt"
-        val f = File(File(db.baseDir(), "ProntuarioViagens").apply { mkdirs() }, nome)
+        
+        // 🔧 CORREÇÃO APLICADA AQUI (Passo B):
+        val pastaDestino = File(db.baseDir(), "ProntuarioViagens").apply { mkdirs() }
+        val f = File(pastaDestino, nome)
+        
         val sb = StringBuilder()
         viagens.forEach { v ->
             sb.appendLine("=== VIAGEM NRO: ${v["nro_viagem"]} ===")
@@ -189,6 +194,7 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
 
     @Composable
     fun linhaFin(label: String, item: ItemFin, resultado: Double, mostrarValor: Boolean = true) {
+        // ✅ Passo C: Alignment.CenterVertically funciona graças ao import do Passo A
         Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(label, fontSize = 13.sp, modifier = Modifier.weight(4f))
             var exp by remember { mutableStateOf(false) }

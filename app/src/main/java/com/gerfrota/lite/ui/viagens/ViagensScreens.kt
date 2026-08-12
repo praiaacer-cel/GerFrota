@@ -1,5 +1,4 @@
-// ui/ViagensScreens.kt
-package com.gerfrota.lite.ui.viagens // (ou com.gerfrota.lite.ui, dependendo de onde você salvou o arquivo)
+package com.gerfrota.lite.ui.viagens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,15 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp // ✅ Correção 1: Importação da unidade 'sp'
+import androidx.compose.ui.unit.sp
 import com.gerfrota.lite.data.DatabaseHelper
-// ✅ Correção 2: Importação das cores a partir do pacote raiz 'ui' (onde elas foram declaradas no Theme.kt)
 import com.gerfrota.lite.ui.AzulCard
 import com.gerfrota.lite.ui.VermelhoAlerta
 import com.gerfrota.lite.ui.VerdeSucesso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ViagensScreen(onBack: () -> Unit) {
     val ctx = LocalContext.current
