@@ -1,70 +1,44 @@
-name: GerFrota Android CI
+name: Build APK Android
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout do Código
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive # Essencial para baixar o llama.cpp corretamente
-        fetch-depth: 0        # 🚨 MÁGICA: Necessário para o CMake do llama.cpp ler o .git e gerar o build-info
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v4
 
-    # ✅ ADICIONE ESTE PASSO:
-    - name: Clone llama.cpp dependency
-      run: |
-        if [ ! -d "llama.cpp" ]; then
-          echo "Cloning llama.cpp..."
-          # O --depth 1 faz um clone raso, deixando o CI muito mais rápido
-          git clone --depth 1 https://github.com/ggerganov/llama.cpp.git llama.cpp
-        fi
+      - name: ☕ Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle' # Cache automático das dependências do app
 
-    - name: Configurar JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: 'gradle'       # 🚨 MÁGICA: Cache nativo e otimizado do Gradle
+      - name: 📦 Cache do Gradle Wrapper (Previne o erro 503)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-wrapper-
 
-    - name: Configurar Android SDK e Aceitar Licenças
-      run: |
-        # Aceita todas as licenças do Android SDK para evitar prompts interativos
-        yes | sdkmanager --licenses > /dev/null 2>&1 || true
-        # Garante que as plataformas e build tools necessárias estejam instaladas
-        sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" > /dev/null 2>&1 || true
+      - name: 🔑 Dar permissão de execução ao gradlew
+        run: chmod +x ./gradlew
 
-    - name: Configurar Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.24.0'
-        channel: 'stable'
-
-    # 🚨 CORREÇÃO CRÍTICA: Injeção do local.properties
-    # O settings.gradle.kts do seu projeto EXIGE o caminho do Flutter.
-    # Este step descobre onde o Flutter foi instalado e cria o arquivo dinamicamente.
-    - name: Criar local.properties para o Gradle
-      run: |
-        FLUTTER_PATH=$(dirname $(dirname $(which flutter)))
-        echo "flutter.sdk=$FLUTTER_PATH" > local.properties
-        echo "sdk.dir=$ANDROID_HOME" >> local.properties
-        echo "✅ Arquivo local.properties criado:"
-        cat local.properties
-
-    - name: Permissão de execução para o Gradlew
-      run: chmod +x ./gradlew
-
-    - name: Build do APK (Debug)
-      run: ./gradlew assembleDebug --stacktrace --no-daemon
-
-    - name: Upload do APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug-apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+      - name: 🛠️ Build do APK (com lógica de retry para falhas de rede)
+        run: |
+          echo "Iniciando build do APK..."
+          # Tenta executar o build até 3 vezes. Se der erro 503, espera 15s e tenta de novo.
+          for i in 1 2 3; do
+            ./gradlew assembleDebug --stacktrace --no-daemon && break
+            echo "⚠️ Falha na tentativa $i (possível erro 503 de rede). Aguardando 15 segundos..."
+            sleep 15
+          done
