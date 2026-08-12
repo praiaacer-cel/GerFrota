@@ -28,8 +28,8 @@ fun RelatorioRentabilidadeScreen(db: DatabaseHelper) {
                     if (r.liquido >= 0) Icons.Default.TrendingUp else Icons.Default.TrendingDown)
                 Spacer(Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    CardSecundario("Total Bruto\n(Fretes)", DatabaseHelper.fmtBRL(r.bruto), Color(0xFF1976D2))
-                    CardSecundario("Despesas\n(Pedágio, Chapa…)", DatabaseHelper.fmtBRL(r.despesas), Color(0xFFC62828))
+                    CardSecundario("Total Bruto\n(Fretes)", DatabaseHelper.fmtBRL(r.bruto), Color(0xFF1976D2), Modifier.weight(1f))
+                    CardSecundario("Despesas\n(Pedágio, Chapa…)", DatabaseHelper.fmtBRL(r.despesas), Color(0xFFC62828), Modifier.weight(1f))
                 }
                 Spacer(Modifier.height(32.dp))
                 Text("Dica do Gestor:", fontWeight = FontWeight.Bold)

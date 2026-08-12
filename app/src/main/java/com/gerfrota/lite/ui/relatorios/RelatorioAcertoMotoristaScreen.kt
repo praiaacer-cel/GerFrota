@@ -29,8 +29,8 @@ fun RelatorioAcertoMotoristaScreen(db: DatabaseHelper) {
                     if (a.saldo >= 0) Color(0xFF2E7D32) else Color(0xFFC62828), Icons.Default.AccountBalanceWallet)
                 Spacer(Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    CardSecundario("Comissões\n(Produção)", DatabaseHelper.fmtBRL(a.comissoes), Color(0xFF1976D2))
-                    CardSecundario("Vales / Adiant.\n(Descontos)", DatabaseHelper.fmtBRL(a.adiantamentos), Color(0xFFC62828))
+                    CardSecundario("Comissões\n(Produção)", DatabaseHelper.fmtBRL(a.comissoes), Color(0xFF1976D2), Modifier.weight(1f))
+                    CardSecundario("Vales / Adiant.\n(Descontos)", DatabaseHelper.fmtBRL(a.adiantamentos), Color(0xFFC62828), Modifier.weight(1f))
                 }
                 Spacer(Modifier.height(32.dp))
                 Surface(color = Color(0xFFE3F2FD), shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)) {

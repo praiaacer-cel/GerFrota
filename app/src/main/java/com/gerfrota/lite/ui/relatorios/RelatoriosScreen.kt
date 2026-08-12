@@ -39,13 +39,21 @@ private fun CardDestaque(titulo: String, valor: String, cor: Color, icone: Image
 }
 
 @Composable
-private fun CardSecundario(titulo: String, valor: String, cor: Color) {
-    Card(Modifier.weight(1f), shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)) {
-        Column(Modifier.padding(14.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-            Text(titulo, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray,
+fun CardSecundario(
+    titulo: String, 
+    valor: String, 
+    cor: Color, 
+    modifier: Modifier = Modifier.fillMaxWidth() // Padrão para quando não estiver em uma Row
+) {
+    Card(
+        modifier = modifier, 
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+    ) {
+        Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(titulo, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF757575),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-            Spacer(Modifier.height(8.dp))
-            Text(valor, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = cor)
+            Spacer(Modifier.height(12.dp))
+            Text(valor, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = cor)
         }
     }
 }
