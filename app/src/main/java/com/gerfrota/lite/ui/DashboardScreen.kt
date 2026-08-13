@@ -53,7 +53,7 @@ fun DashboardScreen(navigate: (String) -> Unit) {
         CardMenu("MANUTENÇÃO", "Serviços e pneus", R.drawable.ic_manutencao, null, "manutencao"),
         CardMenu("COMBUSTÍVEL", "Diesel e ARLA", R.drawable.ic_combustivel, null, "combustivel_selecao"),
         CardMenu("RELATÓRIOS", "Gestor", R.drawable.ic_relatorios, null, "relatorios"),
-        CardMenu("BACKUP", "Gerar e enviar p/ nuvem", null, Icons.Default.CloudUpload, null),
+        CardMenu("BACKUP", "Gerar e enviar p/ nuvem", null, R.drawable.ic_backup, null),
     )
 
     Scaffold(

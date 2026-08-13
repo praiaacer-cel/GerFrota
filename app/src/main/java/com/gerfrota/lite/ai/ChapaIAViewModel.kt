@@ -120,6 +120,18 @@ class ChapaIAViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /**
+     * Acionado pelo botão de atalho na tela para gerar o resumo matinal/diário.
+     */
+    fun resumoDoDia() {
+        viewModelScope.launch(Dispatchers.IO) {
+            add(Role.USER, "Resumo do dia")
+            // Usa o RagService que já possui a lógica de resumo matinal implementada
+            val dadosCtx = rag.resumoMatinal() 
+            add(Role.IA, dadosCtx)
+        }
+    }
+
     // ---------------- CONSULTA (RAG + LLM) ----------------
     private suspend fun consultaRag(texto: String) {
         val dadosCtx = rag.contexto(texto)

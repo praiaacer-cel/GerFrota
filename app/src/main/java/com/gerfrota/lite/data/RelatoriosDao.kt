@@ -77,7 +77,12 @@ object RelatoriosDao {
             if (sn == "SIM" || sn == "ESPERA" || sn.isEmpty()) {
                 var valor = db.num(v["valor_bruto"])
                 if (db.str(v["pago_adiantamento_sn"]).uppercase() == "SIM") valor -= db.num(v["pago_adiantamento_val"])
-                ContaReceber(db.str(v["empresa"]), db.str(v["nro_viagem"]), db.str(v["data_carga"]), valor)
+                ContaReceber(
+                    empresa = db.str(v["empresa"]), 
+                    nro = db.str(v["nro_viagem"]), 
+                    dataCarga = db.str(v["data_carga"]), 
+                    valor = valor
+                )
             } else null
-        }
+         }
 }
