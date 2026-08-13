@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.gerfrota.lite.core.sanitized
 import com.gerfrota.lite.data.DatabaseHelper
 import com.gerfrota.lite.data.abastecimentosPorPlaca
 import com.gerfrota.lite.services.ProntuarioService

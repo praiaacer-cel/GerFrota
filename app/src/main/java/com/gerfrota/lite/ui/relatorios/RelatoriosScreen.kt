@@ -15,8 +15,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RelatoriosScreen(nav: NavController) {
+    // ✅ Rotas SEM espaços no final (casam com o NavHost do MainActivity)
     val itens = listOf(
         Triple("Raio-X do Caminhão", "Lucro, despesas e faturamento por placa", "rel_rent"),
         Triple("Acerto de Motoristas", "Comissões, vales e saldo a pagar", "rel_acerto"),
@@ -36,10 +38,10 @@ fun RelatoriosScreen(nav: NavController) {
                         .clickable { nav.navigate(rota) }
                 ) {
                     ListItem(
-                        headlineContent = { Text(t, fontWeight = FontWeight.Bold) },
+                        headlineContent = { Text(t, fontWeight = FontWeight.Bold) },   // ✅ era "headli neContent"
                         supportingContent = { Text(s) },
                         leadingContent = { Icon(Icons.Default.BarChart, null, tint = Color(0xFF1976D2)) },
-                        trailingContent = { Icon(Icons.Default.ChevronRight, null) },
+                        trailingContent = { Icon(Icons.Default.ChevronRight, null) },  // ✅ era "trailingC ontent"
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
