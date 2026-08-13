@@ -1,27 +1,24 @@
-  package com.gerfrota.lite.ui.relatorios
+package com.gerfrota.lite.ui.relatorios
 
-  import androidx.compose.foundation.layout.*
-  import androidx.compose.foundation.lazy.LazyColumn
-  import androidx.compose.foundation.lazy.items
-  import androidx.compose.material.icons.Icons
-  import androidx.compose.material.icons.filled.*
-  import androidx.compose.material3.*
-  import androidx.compose.runtime.*
-  import androidx.compose.ui.Alignment
-  import androidx.compose.ui.Modifier
-  import androidx.compose.ui.graphics.Color
-  import androidx.compose.ui.platform.LocalContext
-  import androidx.compose.ui.text.font.FontWeight
-  import androidx.compose.ui.unit.dp
-  import androidx.compose.ui.unit.sp
-  import com.gerfrota.lite.data.DatabaseHelper
-  import com.gerfrota.lite.data.RelatoriosDao
-  import kotlinx.coroutines.Dispatchers
-  import kotlinx.coroutines.withContext
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.gerfrota.lite.data.DatabaseHelper
+import com.gerfrota.lite.data.RelatoriosDao
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun RelatorioContasReceberScreen(db: DatabaseHelper) {
-    var contas by remember { mutableStateOf<List<RelatoriosDao.ContaReceber>>(emptyList()) }
+    // ... (mantenha o resto do seu código original abaixo)    var contas by remember { mutableStateOf<List<RelatoriosDao.ContaReceber>>(emptyList()) }
     LaunchedEffect(Unit) { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { contas = RelatoriosDao.contasReceber(db) } }
     Scaffold(topBar = { TopAppBar(title = { Text("Contas a Receber (Pendentes)") }) }) { pad ->
         LazyColumn(Modifier.padding(pad).padding(16.dp)) {
