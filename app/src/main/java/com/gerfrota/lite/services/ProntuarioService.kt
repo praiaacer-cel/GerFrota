@@ -4,6 +4,7 @@ import android.content.Context
 import com.gerfrota.lite.core.PathHelper
 import com.gerfrota.lite.core.sanitized
 import com.gerfrota.lite.data.DatabaseHelper
+import com.gerfrota.lite.data.abastecimentosPorPlaca
 
 object ProntuarioService {
 
