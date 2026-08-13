@@ -23,6 +23,9 @@ fun RelatorioAcertoMotoristaScreen(db: DatabaseHelper) {
     // ... (mantenha o resto do seu código original abaixo)
     // Dica: Onde estiver kotlin.math.abs(a.saldo), você pode usar apenas abs(a.saldo) agora.    var motoristas by remember { mutableStateOf<List<Map<String, Any?>>>(emptyList()) }
     var sel by remember { mutableStateOf<Long?>(null) }
+    val ctx = LocalContext.current
+    val db = remember { DatabaseHelper.get(ctx) } // Obtém o db internamente
+    
     var mes by remember { mutableStateOf(java.util.Calendar.getInstance().get(java.util.Calendar.MONTH) + 1) }
     var ano by remember { mutableStateOf(java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)) }
     var ac by remember { mutableStateOf<RelatoriosDao.Acerto?>(null) }

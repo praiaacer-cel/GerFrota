@@ -15,9 +15,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-fun RelatorioFluxoCaixaScreen(db: DatabaseHelper) {
-    // ... (mantenha o resto do seu código original abaixo)    var mes by remember { mutableStateOf(java.util.Calendar.getInstance().get(java.util.Calendar.MONTH) + 1) }
-    var ano by remember { mutableStateOf(java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)) }
+fun RelatorioFluxoCaixaScreen() {
+    val ctx = LocalContext.current
+    val db = remember { DatabaseHelper.get(ctx) } // Obtém o db internamente
+    
+    var mes by remember { mutableStateOf(java.util.Calendar.getInstance().get(java.util.Calendar.MONTH) + 1) }
+    // ... mantenha o resto do código    var ano by remember { mutableStateOf(java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)) }
     var f by remember { mutableStateOf<RelatoriosDao.Fluxo?>(null) }
     LaunchedEffect(mes, ano) { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { f = RelatoriosDao.fluxoCaixa(db, mes, ano) } }
     Scaffold(topBar = { TopAppBar(title = { Text("Fluxo de Caixa") }) }) { pad ->

@@ -15,10 +15,18 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PneusGestaoScreen(
-    placa: String, tipo: String, marca: String, modelo: String,
+    placa: String, tipo: String, 
     onMap: () -> Unit, onServicos: () -> Unit, onRodizio: () -> Unit, onEstoque: () -> Unit,
     onBack: () -> Unit
 ) {
+    val ctx = LocalContext.current
+    val db = remember { DatabaseHelper.get(ctx) }
+    
+    // Busca a marca e modelo dinamicamente através da placa
+    val veiculo = remember { db.queryAll("frota").firstOrNull { db.str(it["placa"]) == placa } }
+    val marca = db.str(veiculo?.get("marca"))
+    val modelo = db.str(veiculo?.get("modelo"))
+
     Scaffold(topBar = {
         TopAppBar(title = { Text("GESTÃO DE PNEUS", fontWeight = FontWeight.Bold) },
             navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null) } })

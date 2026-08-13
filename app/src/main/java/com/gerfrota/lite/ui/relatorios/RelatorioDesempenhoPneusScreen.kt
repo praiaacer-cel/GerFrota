@@ -96,7 +96,8 @@ fun RelatorioManutencaoScreen() {
 
 @Composable
 fun RelatorioFluxoCaixaScreen() {
-    val ctx = LocalContext.current; val db = remember { DatabaseHelper.get(ctx) }
+    val ctx = LocalContext.current; 
+    val db = remember { DatabaseHelper.get(ctx) }
     val scope = rememberCoroutineScope()
     var mes by remember { mutableStateOf(java.util.Calendar.getInstance().get(java.util.Calendar.MONTH) + 1) }
     var ano by remember { mutableStateOf(java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)) }

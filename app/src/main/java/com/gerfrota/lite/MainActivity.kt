@@ -28,7 +28,6 @@ import java.net.URLEncoder
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val prefs = getSharedPreferences("gerfrota", MODE_PRIVATE)
 
         // ✅ Executa a migração de dados em background (Thread IO) logo na criação da Activity
         lifecycleScope.launch(Dispatchers.IO) {
@@ -55,7 +54,7 @@ class MainActivity : ComponentActivity() {
                     }
                     
                     // ---- DASHBOARD & IA ----
-                    composable("dashboard") { DashboardScreen(nav::navigate, prefs) }
+                    composable("dashboard") { DashboardScreen(nav::navigate) }
                     composable("chapa") { ChapaIaScreen(chapaVm) { nav.popBackStack() } }
                     
                     // ---- FROTA ----
