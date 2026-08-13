@@ -10,7 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment // ✅ Passo A: Import adicionado
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -22,6 +22,7 @@ import com.gerfrota.lite.data.DatabaseHelper
 import com.gerfrota.lite.core.PathHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private class ItemFin(sn: String = "NÃO") {
     var simNao by mutableStateOf(sn)
@@ -69,6 +70,7 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
         "saldoDoc" to "Saldo Doc", "saldoOutros" to "Saldo Outros Reembolsos")
     fun p(s: String) = DatabaseHelper.parseMoney(s)
     fun r(i: ItemFin) = if (i.simNao == "NÃO") 0.0 else p(i.valor)
+    
     // ---- cálculos derivados (planilha original) ----
     val vBruto = p(bruto)
     val totalDespesas = despesas.values.sumOf { r(it) }
@@ -84,6 +86,7 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
     val saldoDoc = if (saldos["saldoDoc"]!!.simNao == "NÃO") 0.0 else r(frete["reembolsoDoc"]!!) - r(despesas["despDoc"]!!)
     val saldoOutros = if (saldos["saldoOutros"]!!.simNao == "NÃO") 0.0 else r(frete["outrosReembolsos"]!!)
     val totalSaldos = saldoFrete + saldoPedagio + saldoEstadia + saldoCarga + saldoChapa + saldoDoc + saldoOutros
+
     LaunchedEffect(Unit) {
         kotlinx.coroutines.withContext(Dispatchers.IO) {
             conjunto = db.queryAll("unidades_transporte").firstOrNull { (it["id"] as? Long) == unidadeId }
@@ -126,9 +129,29 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
             }
         }
     }
+
     val pick = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let { /* cópia tratada no salvar */ }
     }
+
+    // ✅ CORREÇÃO: Função movida para antes de 'salvar' para garantir resolução de escopo
+    fun atualizarProntuario() {
+        val viagens = db.queryAll("viagens").filter { db.str(it["unidade_id"]) == unidadeId.toString() }
+            .sortedBy { db.str(it["nro_viagem"]) }
+        val f = PathHelper.prontuarioViagem(
+            ctx,
+            db.str(conjunto?.get("modelo")).ifBlank { "SemModelo" },
+            db.str(conjunto?.get("placas")).ifBlank { "SemPlaca" }
+        )
+        val sb = StringBuilder()
+        viagens.forEach { v ->
+            sb.appendLine("=== VIAGEM NRO: ${v["nro_viagem"]} ===")
+            sb.appendLine("Data: ${v["data_carga"]} -> Rota: ${v["cidade_partida"]} a ${v["cidade_destino"]}")
+            sb.appendLine("Líquido Final: ${DatabaseHelper.fmtBRL(db.num(v["valor_liquido"]))}\n")
+        }
+        f.writeText(sb.toString())
+    }
+
     fun salvar() = scope.launch(Dispatchers.IO) {
         val row = mapOf(
             "nro_viagem" to nro, "unidade_id" to unidadeId.toString(),
@@ -160,29 +183,20 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
             "total_saldos" to totalSaldos, "valor_liquido" to resumoLiquido,
             "path_manifesto" to pathManifesto, "path_recibo_adiantamento" to pathRecibo,
             "qtd_pedagios" to qtdPedagios, "paths_pedagios" to pathsPedagios.filterNotNull().joinToString("|"))
+        
         if (viagemId >= 0) db.update("viagens", viagemId, row) else db.insert("viagens", row)
+        
+        // Chama a atualização do prontuário ainda na thread IO (banco de dados/arquivos)
         atualizarProntuario()
-        nav.popBackStack()
-    }
-    fun atualizarProntuario() {
-        val viagens = db.queryAll("viagens").filter { db.str(it["unidade_id"]) == unidadeId.toString() }
-            .sortedBy { db.str(it["nro_viagem"]) }
-        val f = PathHelper.prontuarioViagem(
-            ctx,
-            db.str(conjunto?.get("modelo")).ifBlank { "SemModelo" },
-            db.str(conjunto?.get("placas")).ifBlank { "SemPlaca" }
-        )
-        val sb = StringBuilder()
-        viagens.forEach { v ->
-            sb.appendLine("=== VIAGEM NRO: ${v["nro_viagem"]} ===")
-            sb.appendLine("Data: ${v["data_carga"]} -> Rota: ${v["cidade_partida"]} a ${v["cidade_destino"]}")
-            sb.appendLine("Líquido Final: ${DatabaseHelper.fmtBRL(db.num(v["valor_liquido"]))}\n")
+        
+        // Navegação deve ocorrer obrigatoriamente na thread Main
+        withContext(Dispatchers.Main) {
+            nav.popBackStack()
         }
-        f.writeText(sb.toString())
     }
+
     @Composable
     fun linhaFin(label: String, item: ItemFin, resultado: Double, mostrarValor: Boolean = true) {
-        // ✅ Passo C: Alignment.CenterVertically funciona graças ao import do Passo A
         Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(label, fontSize = 13.sp, modifier = Modifier.weight(4f))
             var exp by remember { mutableStateOf(false) }
@@ -200,6 +214,7 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
                 color = if (resultado < 0) Color(0xFFC62828) else Color(0xFF212121))
         }
     }
+
     Scaffold(topBar = {
         TopAppBar(title = { Text(if (viagemId >= 0) "Editar Viagem" else "Nova Viagem", fontWeight = FontWeight.Bold) },
             navigationIcon = { IconButton(onClick = { nav.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) } })

@@ -1,3 +1,21 @@
+package com.gerfrota.lite.ui.relatorios // (ou o pacote correspondente)
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color              // ✅ Adicionar
+import androidx.compose.ui.text.font.FontWeight     // ✅ Adicionar
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.gerfrota.lite.data.DatabaseHelper
+import com.gerfrota.lite.data.RelatoriosDao
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 @Composable
 fun RelatorioManutencaoScreen(db: DatabaseHelper) {
     var total by remember { mutableStateOf(0.0) }
