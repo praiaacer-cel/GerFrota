@@ -20,7 +20,7 @@ fun CardDestaque(titulo: String, valor: String, cor: Color, icone: ImageVector) 
         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)) {
         Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                androidx.compose.material3.Icon(icone, null, tint = cor, modifier = Modifier.size(28.dp))
+                Icon(icone, null, tint = cor, modifier = Modifier.size(28.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(titulo, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = cor)
             }
@@ -31,8 +31,16 @@ fun CardDestaque(titulo: String, valor: String, cor: Color, icone: ImageVector) 
 }
 
 @Composable
-fun CardSecundario(titulo: String, valor: String, cor: Color) {
-    Card(Modifier.weight(1f), shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)) {
+fun CardSecundario(
+    titulo: String,
+    valor: String,
+    cor: Color,
+    modifier: Modifier = Modifier.fillMaxWidth()
+) {
+    Card(
+        modifier = modifier,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+    ) {
         Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(titulo, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF757575),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center)
@@ -48,20 +56,24 @@ fun SeletorMesAno(mes: Int, ano: Int, onMes: (Int) -> Unit, onAno: (Int) -> Unit
     var expMes by remember { mutableStateOf(false) }
     var expAno by remember { mutableStateOf(false) }
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        ExposedDropdownMenuBox(expanded = expMes, onExpandedChange = { expMes = it }, Modifier.weight(1f)) {
+        ExposedDropdownMenuBox(expanded = expMes, onExpandedChange = { expMes = it }, modifier = Modifier.weight(1f)) {
             OutlinedTextField(MESES[mes - 1], {}, readOnly = true,
                 modifier = Modifier.fillMaxWidth().menuAnchor(),
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expMes) })
             ExposedDropdownMenu(expMes, { expMes = false }) {
-                MESES.forEachIndexed { i, m -> DropdownMenuItem({ Text(m) }, { onMes(i + 1) }) }
+                MESES.forEachIndexed { i, m -> 
+                    DropdownMenuItem(text = { Text(m) }, onClick = { onMes(i + 1) }) 
+                }
             }
         }
-        ExposedDropdownMenuBox(expanded = expAno, onExpandedChange = { expAno = it }, Modifier.weight(1f)) {
+        ExposedDropdownMenuBox(expanded = expAno, onExpandedChange = { expAno = it }, modifier = Modifier.weight(1f)) {
             OutlinedTextField(ano.toString(), {}, readOnly = true,
                 modifier = Modifier.fillMaxWidth().menuAnchor(),
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expAno) })
             ExposedDropdownMenu(expAno, { expAno = false }) {
-                (2023..2030).forEach { a -> DropdownMenuItem({ Text(a.toString()) }, { onAno(a) }) }
+                (2023..2030).forEach { a -> 
+                    DropdownMenuItem(text = { Text(a.toString()) }, onClick = { onAno(a) }) 
+                }
             }
         }
     }
@@ -71,12 +83,14 @@ fun SeletorMesAno(mes: Int, ano: Int, onMes: (Int) -> Unit, onAno: (Int) -> Unit
 @Composable
 fun DropdownSimples(label: String, valor: String?, opcoes: List<String>, onSel: (String) -> Unit) {
     var exp by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = exp, onExpandedChange = { exp = it }, Modifier.fillMaxWidth()) {
+    ExposedDropdownMenuBox(expanded = exp, onExpandedChange = { exp = it }, modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(valor ?: "", {}, readOnly = true, label = { Text(label) },
             modifier = Modifier.fillMaxWidth().menuAnchor(),
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(exp) })
         ExposedDropdownMenu(exp, { exp = false }) {
-            opcoes.forEach { o -> DropdownMenuItem({ Text(o) }, { onSel(o) }) }
+            opcoes.forEach { o -> 
+                DropdownMenuItem(text = { Text(o) }, onClick = { onSel(o) }) 
+            }
         }
     }
 }
