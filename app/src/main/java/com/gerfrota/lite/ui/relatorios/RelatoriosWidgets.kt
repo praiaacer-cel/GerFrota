@@ -10,9 +10,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
- 
-val MESES = listOf("Janeiro","Fevereiro","Março","Abril","Maio","Junho",
-    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro")
+
+val MESES = listOf("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro")
 
 @Composable
 fun CardDestaque(titulo: String, valor: String, cor: Color, icone: ImageVector) {
@@ -31,16 +31,8 @@ fun CardDestaque(titulo: String, valor: String, cor: Color, icone: ImageVector) 
 }
 
 @Composable
-fun CardSecundario(
-    titulo: String, 
-    valor: String, 
-    cor: Color, 
-    modifier: Modifier = Modifier.fillMaxWidth() // Padrão para quando não estiver em uma Row
-) {
-    Card(
-        modifier = modifier, 
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
-    ) {
+fun CardSecundario(titulo: String, valor: String, cor: Color) {
+    Card(Modifier.weight(1f), shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)) {
         Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(titulo, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF757575),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center)

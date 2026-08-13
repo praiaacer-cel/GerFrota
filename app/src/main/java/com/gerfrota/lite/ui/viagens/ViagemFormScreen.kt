@@ -1,5 +1,5 @@
 package com.gerfrota.lite.ui.viagens
- 
+
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,7 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment // ✅ Passo A: Import adicionado
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -34,7 +34,6 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
     val ctx = LocalContext.current
     val db = remember { DatabaseHelper.get(ctx) }
     val scope = rememberCoroutineScope()
-
     var conjunto by remember { mutableStateOf<Map<String, Any?>?>(null) }
     var nro by remember { mutableStateOf("00001") }
     var dataCarga by remember { mutableStateOf("") }; var dataDescarga by remember { mutableStateOf("") }
@@ -42,7 +41,6 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
     var empresa by remember { mutableStateOf("") }; var carga by remember { mutableStateOf("") }
     var nf by remember { mutableStateOf("") }; var manifestoDoc by remember { mutableStateOf("") }
     var bruto by remember { mutableStateOf("") }
-
     val frete = remember { linkedMapOf(
         "adiantamento" to ItemFin(), "valePedagio" to ItemFin(), "reembolsoEstadia" to ItemFin(),
         "reembolsoCarga" to ItemFin(), "reembolsoChapa" to ItemFin(), "reembolsoDoc" to ItemFin(),
@@ -55,12 +53,10 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
         "saldoFrete" to ItemFin(), "saldoPedagio" to ItemFin(), "saldoEstadia" to ItemFin(),
         "saldoCarga" to ItemFin(), "saldoChapa" to ItemFin(), "saldoDoc" to ItemFin(),
         "saldoOutros" to ItemFin()) }
-
     var pathManifesto by remember { mutableStateOf<String?>(null) }
     var pathRecibo by remember { mutableStateOf<String?>(null) }
     var qtdPedagios by remember { mutableStateOf(0) }
     val pathsPedagios = remember { mutableStateListOf<String?>() }
-
     val labelsFrete = mapOf("adiantamento" to "Adiantamento", "valePedagio" to "Vale Pedágio",
         "reembolsoEstadia" to "Reembolso Estadia", "reembolsoCarga" to "Reembolso Carga",
         "reembolsoChapa" to "Reembolso Chapa", "reembolsoDoc" to "Reembolso Doc",
@@ -71,11 +67,9 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
     val labelsSaldos = mapOf("saldoFrete" to "Saldo de Frete", "saldoPedagio" to "Saldo de Pedágio",
         "saldoEstadia" to "Saldo de Estadia", "saldoCarga" to "Saldo Carga", "saldoChapa" to "Saldo Chapa",
         "saldoDoc" to "Saldo Doc", "saldoOutros" to "Saldo Outros Reembolsos")
-
     fun p(s: String) = DatabaseHelper.parseMoney(s)
     fun r(i: ItemFin) = if (i.simNao == "NÃO") 0.0 else p(i.valor)
 
-    // ---- cálculos derivados (planilha original) ----
     val vBruto = p(bruto)
     val totalDespesas = despesas.values.sumOf { r(it) }
     val resumoReembolsos = r(frete["valePedagio"]!!) + r(frete["reembolsoEstadia"]!!) +
@@ -177,11 +171,10 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
     fun atualizarProntuario() {
         val viagens = db.queryAll("viagens").filter { db.str(it["unidade_id"]) == unidadeId.toString() }
             .sortedBy { db.str(it["nro_viagem"]) }
-    
         val f = PathHelper.prontuarioViagem(
             ctx,
-            db.str(conjunto?.get("modelo")).ifBlank { "SemModelo" },
-            db.str(conjunto?.get("placas")).ifBlank { "SemPlaca" }
+            db.str(conjunto?.get("modelo")) ?: "SemModelo",
+            db.str(conjunto?.get("placas")) ?: "SemPlaca"
         )
         val sb = StringBuilder()
         viagens.forEach { v ->
@@ -194,7 +187,6 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
 
     @Composable
     fun linhaFin(label: String, item: ItemFin, resultado: Double, mostrarValor: Boolean = true) {
-        // ✅ Passo C: Alignment.CenterVertically funciona graças ao import do Passo A
         Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(label, fontSize = 13.sp, modifier = Modifier.weight(4f))
             var exp by remember { mutableStateOf(false) }
@@ -235,15 +227,12 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
             OutlinedTextField(carga, { carga = it }, label = { Text("Carga") }, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(nf, { nf = it }, label = { Text("Nota Fiscal") }, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(manifestoDoc, { manifestoDoc = it }, label = { Text("Nro Manifesto") }, modifier = Modifier.fillMaxWidth())
-
             Text("SOBRE O FRETE", fontWeight = FontWeight.Bold, color = Color(0xFF607D8B))
             OutlinedTextField(bruto, { bruto = it }, label = { Text("VALOR BRUTO") }, modifier = Modifier.fillMaxWidth())
             frete.forEach { (k, item) -> linhaFin(labelsFrete[k]!!, item, r(item)) }
-
             Text("DESPESAS DO FRETE", fontWeight = FontWeight.Bold, color = Color(0xFF607D8B))
             despesas.forEach { (k, item) -> linhaFin(labelsDespesas[k]!!, item, r(item)) }
             Text("TOTAL DESPESAS: ${DatabaseHelper.fmtBRL(totalDespesas)}", fontWeight = FontWeight.Bold)
-
             Text("SALDOS A RECEBER", fontWeight = FontWeight.Bold, color = Color(0xFF607D8B))
             linhaFin(labelsSaldos["saldoFrete"]!!, saldos["saldoFrete"]!!, saldoFrete, mostrarValor = false)
             linhaFin(labelsSaldos["saldoPedagio"]!!, saldos["saldoPedagio"]!!, saldoPedagio, mostrarValor = false)
@@ -253,13 +242,11 @@ fun ViagemFormScreen(unidadeId: Long, viagemId: Long, nav: NavController) {
             linhaFin(labelsSaldos["saldoDoc"]!!, saldos["saldoDoc"]!!, saldoDoc, mostrarValor = false)
             linhaFin(labelsSaldos["saldoOutros"]!!, saldos["saldoOutros"]!!, saldoOutros, mostrarValor = false)
             Text("TOTAL SALDOS A RECEBER: ${DatabaseHelper.fmtBRL(totalSaldos)}", fontWeight = FontWeight.Bold, color = Color(0xFFC62828))
-
             Text("RESUMO DO FRETE", fontWeight = FontWeight.Bold, color = Color(0xFF607D8B))
             Text("Valor Bruto: ${DatabaseHelper.fmtBRL(vBruto)}")
             Text("Reembolsos: ${DatabaseHelper.fmtBRL(resumoReembolsos)}")
             Text("Despesas: ${DatabaseHelper.fmtBRL(totalDespesas)}")
             Text("VALOR LÍQUIDO: ${DatabaseHelper.fmtBRL(resumoLiquido)}", fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32), fontSize = 18.sp)
-
             Button(onClick = { salvar() }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
                 Text("SALVAR VIAGEM", fontWeight = FontWeight.Bold)
             }
