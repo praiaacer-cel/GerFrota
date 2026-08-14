@@ -47,10 +47,10 @@ class PdfWriter(private val w: Int, private val h: Int, private val margin: Floa
         for (word in t.split(" ")) {
             val test = if (line.isEmpty()) word else "$line $word"
             if (pText.measureText(test) > maxW && line.isNotEmpty()) {
-                quebra(); canvas!!.drawText(line, x, y); y += 13f; line = word
+                quebra(); canvas!!.drawText(line, x, y, pText); y += 13f; line = word
             } else line = test
         }
-        if (line.isNotEmpty()) { quebra(); canvas!!.drawText(line, x, y); y += 13f }
+        if (line.isNotEmpty()) { quebra(); canvas!!.drawText(line, x, y, pText); y += 13f }
     }
     fun salvar(file: File) {
         ensure(); open?.let { doc.finishPage(it) }; open = null

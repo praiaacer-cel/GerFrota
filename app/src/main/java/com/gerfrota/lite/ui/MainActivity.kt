@@ -217,7 +217,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     // ---- RELATÓRIOS (versões SEM parâmetro, que pegam o db internamente) ----
-                    composable("relatorios") { RelatoriosScreen(nav) }   // ✅ recebe NavController, não lambda
+                    composable("relatorios") { RelatoriosScreen(nav) }
                     composable("rel_rent") { RelatorioRentabilidadeScreen() }
                     composable("rel_acerto") { RelatorioAcertoMotoristaScreen() }
                     composable("rel_pneus") { RelatorioDesempenhoPneusScreen() }

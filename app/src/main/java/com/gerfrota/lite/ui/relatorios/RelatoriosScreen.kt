@@ -38,10 +38,10 @@ fun RelatoriosScreen(nav: NavController) {
                         .clickable { nav.navigate(rota) }
                 ) {
                     ListItem(
-                        headlineContent = { Text(t, fontWeight = FontWeight.Bold) },   // ✅ era "headli neContent"
+                        headlineContent = { Text(t, fontWeight = FontWeight.Bold) },
                         supportingContent = { Text(s) },
                         leadingContent = { Icon(Icons.Default.BarChart, null, tint = Color(0xFF1976D2)) },
-                        trailingContent = { Icon(Icons.Default.ChevronRight, null) },  // ✅ era "trailingC ontent"
+                        trailingContent = { Icon(Icons.Default.ChevronRight, null) },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }

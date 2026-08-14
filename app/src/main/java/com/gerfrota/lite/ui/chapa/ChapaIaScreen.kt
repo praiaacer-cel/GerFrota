@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -105,7 +106,7 @@ fun ChapaIaScreen(vm: ChapaIAViewModel, onBack: () -> Unit) {
                         FilledIconButton(
                             onClick = { vm.send(input); input = "" },
                             enabled = input.isNotBlank() && !gerando,
-                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = AzulCard)) {
+                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFF1976D2)) {
                             Icon(Icons.AutoMirrored.Filled.Send, null, tint = Color.White)
                         }
                     }

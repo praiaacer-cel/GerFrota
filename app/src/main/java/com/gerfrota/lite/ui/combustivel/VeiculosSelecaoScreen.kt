@@ -47,8 +47,10 @@ fun VeiculosSelecaoScreen(onSelecionar: (placa: String, veiculoId: Long) -> Unit
                 modifier = Modifier.fillMaxWidth().padding(16.dp))
             LazyColumn(contentPadding = PaddingValues(16.dp)) {
                 items(filtrados, key = { (it["id"] as? Long) ?: 0L }) { v ->
-                    Card(Modifier.fillMaxWidth().padding(vertical = 6.dp),
-                        onClick = { onSelecionar(db.str(v["placa"]), (v["id"] as? Long) ?: 0L) }) {
+                    Card(
+                        onClick = { onSelecionar(db.str(v["placa"]), (v["id"] as? Long) ?: 0L) },
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
+                    ) {
                         ListItem(
                             leadingContent = { Icon(Icons.Default.LocalShipping, null, tint = MaterialTheme.colorScheme.primary) },
                             headlineContent = { Text(db.str(v["placa"]), fontWeight = FontWeight.Bold) },
