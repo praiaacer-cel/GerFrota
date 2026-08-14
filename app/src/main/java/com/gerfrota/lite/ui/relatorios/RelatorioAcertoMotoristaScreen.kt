@@ -1,4 +1,4 @@
-package com.gerfrota.lite.ui.relatorios // Use ui.motoristas se o arquivo estiver nesta pasta
+package com.gerfrota.lite.ui.relatorios
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -21,6 +21,7 @@ import kotlin.math.abs
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RelatorioAcertoMotoristaScreen() {
+    // Obtendo db internamente (casa com a chamada do MainActivity sem parâmetros)
     val ctx = LocalContext.current
     val db = remember { DatabaseHelper.get(ctx) }
     
