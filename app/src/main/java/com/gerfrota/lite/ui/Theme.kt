@@ -44,7 +44,6 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun GerFrotaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
@@ -53,16 +52,16 @@ fun GerFrotaTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-
+    
     MaterialTheme(
         colorScheme = lightColorScheme(
             primary = AzulPrimario, secondary = LaranjaAccent,
-            surface = Fundo, background = Fundo),
-        typography = Typography,
+            surface = Fundo, background = Fundo
+        ),
+        // ❌ REMOVIDO: typography = Typography, (Evita erro se Type.kt não existir)
         content = content
     )
 }

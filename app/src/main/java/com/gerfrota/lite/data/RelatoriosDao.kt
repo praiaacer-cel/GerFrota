@@ -9,7 +9,9 @@ object RelatoriosDao {
         return c.get(Calendar.MONTH) + 1 == mes && c.get(Calendar.YEAR) == ano
     }
 
+    // --- RAIO-X (Rentabilidade) ---
     data class RaioX(val qtd: Int, val bruto: Double, val despesas: Double, val liquido: Double)
+    
     fun raioX(db: DatabaseHelper, placa: String, mes: Int, ano: Int): RaioX {
         var q = 0; var b = 0.0; var d = 0.0; var l = 0.0
         db.queryAll("viagens").forEach { v ->
@@ -20,7 +22,9 @@ object RelatoriosDao {
         return RaioX(q, b, d, l)
     }
 
+    // --- ACERTO DE MOTORISTAS ---
     data class Acerto(val comissoes: Double, val adiantamentos: Double, val saldo: Double)
+    
     fun acertoMotorista(db: DatabaseHelper, motoristaId: Long, mes: Int, ano: Int): Acerto {
         val mot = db.queryAll("motoristas").firstOrNull { (it["id"] as? Long) == motoristaId } ?: return Acerto(0.0, 0.0, 0.0)
         val nome = db.str(mot["nome"]).trim().lowercase()
@@ -37,7 +41,9 @@ object RelatoriosDao {
         return Acerto(com, adi, com - adi)
     }
 
+    // --- DESEMPENHO DE PNEUS ---
     data class RankPneu(val marca: String, val qtd: Int, val km: Double, val custo: Double, val cpk: Double)
+    
     fun desempenhoPneus(db: DatabaseHelper): List<RankPneu> =
         db.queryAll("pneus").groupBy { db.str(it["marca"]).ifBlank { "Desconhecida" } }
             .map { (marca, list) ->
@@ -46,7 +52,10 @@ object RelatoriosDao {
                 RankPneu(marca, list.size, km, custo, if (km > 0) custo / km else 0.0)
             }.sortedBy { it.cpk }
 
+    // --- CONSUMO DE COMBUSTÍVEL ---
     data class Consumo(val placa: String, val km: Double, val litros: Double, val media: Double)
+    
+    // Função original
     fun consumoCombustivel(db: DatabaseHelper): List<Consumo> =
         db.queryAll("combustivel").groupBy { db.str(it["placa_principal"]) }
             .map { (placa, list) ->
@@ -54,13 +63,49 @@ object RelatoriosDao {
                 val li = list.sumOf { db.num(it["litros"]) }
                 Consumo(placa, km, li, if (li > 0) km / li else 0.0)
             }.sortedByDescending { it.media }
+            
+    // ✅ ADICIONADO: Alias para evitar erro de "Unresolved reference" na tela
+    fun consumoPorVeiculo(db: DatabaseHelper): List<Consumo> = consumoCombustivel(db)
 
-    fun custoTotalManutencoes(db: DatabaseHelper): Pair<Double, List<Map<String, Any?>>> {
+    // --- MANUTENÇÃO E VENCIMENTOS ---
+    // ✅ ADICIONADO: Nome que a tela de Manutenção espera
+    fun totalManutencoes(db: DatabaseHelper): Pair<Double, List<Map<String, Any?>>> {
         val list = db.queryAll("manutencoes")
         return list.sumOf { DatabaseHelper.parseMoney(db.str(it["valor_servico"])) } to list
     }
+    
+    // Mantendo o nome original caso seja usado em outro lugar
+    fun custoTotalManutencoes(db: DatabaseHelper): Pair<Double, List<Map<String, Any?>>> = totalManutencoes(db)
 
+    // ✅ ADICIONADO: Função para gerar os alertas de documentos vencidos
+    fun alertasVencimento(db: DatabaseHelper): List<String> {
+        val alertas = mutableListOf<String>()
+        val hoje = Calendar.getInstance()
+        db.queryAll("frota").forEach { v ->
+            val placa = db.str(v["placa"])
+            
+            // Checa Licenciamento
+            val vencLic = DatabaseHelper.parseDataBR(db.str(v["vencimento_licenciamento"]))
+            if (vencLic != null) {
+                val dias = ((vencLic.timeInMillis - hoje.timeInMillis) / (1000 * 60 * 60 * 24)).toInt()
+                if (dias < 0) alertas.add("🔴 $placa: Licenciamento VENCIDO")
+                else if (dias <= 30) alertas.add("🟡 $placa: Licenciamento vence em $dias dias")
+            }
+            
+            // Checa ANTT
+            val vencAntt = DatabaseHelper.parseDataBR(db.str(v["vencimento_antt"]))
+            if (vencAntt != null) {
+                val dias = ((vencAntt.timeInMillis - hoje.timeInMillis) / (1000 * 60 * 60 * 24)).toInt()
+                if (dias < 0) alertas.add("🔴 $placa: ANTT VENCIDO")
+                else if (dias <= 30) alertas.add("🟡 $placa: ANTT vence em $dias dias")
+            }
+        }
+        return alertas
+    }
+
+    // --- FLUXO DE CAIXA ---
     data class Fluxo(val receitas: Double, val despesas: Double, val saldo: Double)
+    
     fun fluxoCaixa(db: DatabaseHelper, mes: Int, ano: Int): Fluxo {
         var rec = 0.0; var desp = 0.0
         db.queryAll("viagens").forEach { v -> if (noMes(db, db.str(v["data_carga"]), mes, ano)) rec += db.num(v["valor_liquido"]) }
@@ -70,7 +115,9 @@ object RelatoriosDao {
         return Fluxo(rec, desp, rec - desp)
     }
 
+    // --- CONTAS A RECEBER ---
     data class ContaReceber(val empresa: String, val nro: String, val dataCarga: String, val valor: Double)
+    
     fun contasReceber(db: DatabaseHelper): List<ContaReceber> =
         db.queryAll("viagens").mapNotNull { v ->
             val sn = db.str(v["saldo_frete_sn"]).uppercase()
@@ -84,5 +131,5 @@ object RelatoriosDao {
                     valor = valor
                 )
             } else null
-         }
+        }
 }

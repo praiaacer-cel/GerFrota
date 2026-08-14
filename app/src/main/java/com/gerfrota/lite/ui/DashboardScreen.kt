@@ -44,7 +44,7 @@ fun DashboardScreen(navigate: (String) -> Unit) {
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("gerfrota", android.content.Context.MODE_PRIVATE)
     val scope = rememberCoroutineScope()
-
+    
     val cards = listOf(
         CardMenu("CHAPA IA", "100% offline", R.drawable.ic_chapa_ia, null, "chapa"),
         CardMenu("FROTA", "Veículos e docs", R.drawable.ic_frota, null, "frota"),
@@ -53,7 +53,8 @@ fun DashboardScreen(navigate: (String) -> Unit) {
         CardMenu("MANUTENÇÃO", "Serviços e pneus", R.drawable.ic_manutencao, null, "manutencao"),
         CardMenu("COMBUSTÍVEL", "Diesel e ARLA", R.drawable.ic_combustivel, null, "combustivel_selecao"),
         CardMenu("RELATÓRIOS", "Gestor", R.drawable.ic_relatorios, null, "relatorios"),
-        CardMenu("BACKUP", "Gerar e enviar p/ nuvem", null, R.drawable.ic_backup, null),
+        // ✅ AÇÃO A: Passando null no PNG e Icons.Default.CloudUpload no vetor (ImageVector)
+        CardMenu("BACKUP", "Gerar e enviar p/ nuvem", null, Icons.Default.CloudUpload, null),
     )
 
     Scaffold(
@@ -98,11 +99,10 @@ fun DashboardScreen(navigate: (String) -> Unit) {
                         .clickable {
                             if (card.rota != null) navigate(card.rota)
                             else {
-                                // ✅ NOVA LÓGICA DE BACKUP (Compactado + Nuvem)
+                                // Lógica de Backup (Compactado + Nuvem)
                                 scope.launch(Dispatchers.IO) {
                                     val zip = BackupService.criarBackupCompactado(context)
                                     val token = prefs.getString("conta_token", null)
-                                    
                                     val msg = if (zip != null && token != null) {
                                         DriveUploader.upload(zip, token)
                                         "Backup gerado e enviado para a nuvem!"
@@ -111,7 +111,6 @@ fun DashboardScreen(navigate: (String) -> Unit) {
                                     } else {
                                         "Backup gerado, mas token da conta não encontrado."
                                     }
-                                    
                                     withContext(Dispatchers.Main) {
                                         Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
                                     }
@@ -134,8 +133,9 @@ fun DashboardScreen(navigate: (String) -> Unit) {
                                 modifier = Modifier.size(64.dp)
                             )
                         } else {
+                            // ✅ AÇÃO C: Chamada corrigida para vetorSafe()
                             Icon(
-                                imageVector = card.vettorSafe(),
+                                imageVector = card.vetorSafe(),
                                 contentDescription = card.titulo,
                                 tint = AzulCard,
                                 modifier = Modifier.size(56.dp)
@@ -162,4 +162,5 @@ fun DashboardScreen(navigate: (String) -> Unit) {
     }
 }
 
-private fun CardMenu.vettorSafe(): ImageVector = vetor ?: Icons.Default.CloudUpload
+// ✅ AÇÃO B: Nome da função de extensão corrigido de vettorSafe para vetorSafe
+private fun CardMenu.vetorSafe(): ImageVector = vetor ?: Icons.Default.CloudUpload

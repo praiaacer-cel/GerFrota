@@ -2,11 +2,17 @@ package com.gerfrota.lite.services
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.pdf.PdfDocument
+import android.graphics.pdf.PdfRenderer
+import android.os.ParcelFileDescriptor
 import androidx.core.content.FileProvider
-import com.gerfrota.lite.data.DatabaseHelper
 import com.gerfrota.lite.core.PathHelper
+import com.gerfrota.lite.data.DatabaseHelper
 import java.io.File
 
 /** Writer simples multi-página sobre android.graphics.pdf.PdfDocument. */
@@ -23,6 +29,7 @@ class PdfWriter(private val w: Int, private val h: Int, private val margin: Floa
         open = doc.startPage(PdfDocument.PageInfo.Builder(w, h, doc.pageCount + 1).create())
         canvas = open!!.canvas; y = margin
     }
+
     private fun ensure() { if (canvas == null) newPage() }
     private fun quebra() { if (y > h - margin) newPage() }
 
@@ -33,15 +40,22 @@ class PdfWriter(private val w: Int, private val h: Int, private val margin: Floa
         c.drawText(sub, margin + 8, y + 34, Paint().apply { isAntiAlias = true; textSize = 8f; color = Color.WHITE })
         y += 56
     }
-    fun secao(t: String) { ensure(); quebra(); y += 6; canvas!!.drawText(t.uppercase(), margin, y,
-        Paint().apply { isAntiAlias = true; textSize = 10f; color = Color.rgb(25, 118, 210); isFakeBoldText = true }); y += 14 }
+
+    fun secao(t: String) { 
+        ensure(); quebra(); y += 6
+        canvas!!.drawText(t.uppercase(), margin, y, Paint().apply { isAntiAlias = true; textSize = 10f; color = Color.rgb(25, 118, 210); isFakeBoldText = true })
+        y += 14 
+    }
+
     fun linha(label: String, valor: String) {
         ensure(); quebra()
         canvas!!.drawText("$label: ", margin, y, pBold)
         val wl = pBold.measureText("$label: ")
         textoQuebrado(valor.ifBlank { "Não informado" }, margin + wl, w - margin - (margin + wl))
     }
+
     fun texto(t: String) { ensure(); textoQuebrado(t, margin, w - margin * 2) }
+
     private fun textoQuebrado(t: String, x: Float, maxW: Float) {
         var line = ""
         for (word in t.split(" ")) {
@@ -52,6 +66,7 @@ class PdfWriter(private val w: Int, private val h: Int, private val margin: Floa
         }
         if (line.isNotEmpty()) { quebra(); canvas!!.drawText(line, x, y, pText); y += 13f }
     }
+
     fun salvar(file: File) {
         ensure(); open?.let { doc.finishPage(it) }; open = null
         file.parentFile?.mkdirs()
@@ -68,7 +83,7 @@ object PdfService {
         File(PathHelper.pastaDocumentosGerFrota(ctx), sub.joinToString("/"))
 
     // ✅ NOVA FUNÇÃO: Formatação de moeda
-    private fun fmt(v: Double) = com.gerfrota.lite.data.DatabaseHelper.fmtBRL(v)
+    private fun fmt(v: Double) = DatabaseHelper.fmtBRL(v)
 
     /** Card A6 de manutenção (salva em CardsManutencao). */
     fun gerarCardA6(ctx: Context, m: Map<String, Any?>, placa: String): File {
@@ -139,10 +154,9 @@ object PdfService {
         wp.salvar(f); return f
     }
 
-    // ✅ NOVA FUNÇÃO: Relatório de Viagem
     /** Relatório de Viagem A4 (salva em ViagensFretes). */
-    fun gerarRelatorioViagem(ctx: android.content.Context, v: Map<String, Any?>): File {
-        val db = com.gerfrota.lite.data.DatabaseHelper.get(ctx)
+    fun gerarRelatorioViagem(ctx: Context, v: Map<String, Any?>): File {
+        val db = DatabaseHelper.get(ctx)
         val wp = PdfWriter(595, 842)
         wp.header("RELATÓRIO DE VIAGEM - ${db.str(v["nro_viagem"])}", "GerFrotaLite")
         wp.linha("Motorista", db.str(v["motorista"]))
@@ -160,28 +174,37 @@ object PdfService {
         wp.salvar(f); return f
     }
 
-    // ✅ NOVA FUNÇÃO: Mesclar PDFs
     /** Mescla PDFs anexos ao PDF base usando PdfRenderer (100% nativo). */
     fun mesclarPdfs(base: File, anexos: List<File>, out: File) {
-        val doc = android.graphics.pdf.PdfDocument()
+        val doc = PdfDocument()
         var n = 1
         fun add(file: File) {
-            val fd = android.os.ParcelFileDescriptor.open(file, android.os.ParcelFileDescriptor.MODE_READ_ONLY)
-            val renderer = android.graphics.pdf.PdfRenderer(fd)
+            // ✅ CORREÇÃO: Usando os imports diretos para evitar Unresolved reference
+            val fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+            val renderer = PdfRenderer(fd)
+            
+            // ✅ Agora o pageCount é perfeitamente reconhecido
             for (i in 0 until renderer.pageCount) {
                 val page = renderer.openPage(i)
-                val bmp = android.graphics.Bitmap.createBitmap(page.width, page.height, android.graphics.Bitmap.Config.ARGB_8888)
-                bmp.eraseColor(android.graphics.Color.WHITE)
-                page.render(bmp, null, null, android.graphics.pdf.PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                val bmp = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
+                bmp.eraseColor(Color.WHITE)
+                page.render(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                 page.close()
-                val info = android.graphics.pdf.PdfDocument.PageInfo.Builder(page.width, page.height, n++).create()
-                val p = doc.startPage(info); p.canvas.drawBitmap(bmp, 0f, 0f, null); doc.finishPage(p)
+                
+                val info = PdfDocument.PageInfo.Builder(page.width, page.height, n++).create()
+                val p = doc.startPage(info)
+                p.canvas.drawBitmap(bmp, 0f, 0f, null)
+                doc.finishPage(p)
                 bmp.recycle()
             }
-            renderer.close(); fd.close()
+            renderer.close()
+            fd.close()
         }
-        add(base); anexos.forEach { runCatching { add(it) } }
-        out.outputStream().use { doc.writeTo(it) }; doc.close()
+        
+        add(base)
+        anexos.forEach { runCatching { add(it) } }
+        out.outputStream().use { doc.writeTo(it) }
+        doc.close()
     }
 
     /** Compartilha via ACTION_SEND + FileProvider. */

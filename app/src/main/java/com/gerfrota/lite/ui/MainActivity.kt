@@ -12,7 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.gerfrota.lite.ai.ChapaIAViewModel
 import com.gerfrota.lite.data.DatabaseHelper
-import com.gerfrota.lite.data.MigracaoDados
+import com.gerfrota.lite.services.MigracaoDados 
 import com.gerfrota.lite.ui.combustivel.*
 import com.gerfrota.lite.ui.conjuntos.*
 import com.gerfrota.lite.ui.frota.*
@@ -21,7 +21,6 @@ import com.gerfrota.lite.ui.manutencao.*
 import com.gerfrota.lite.ui.motoristas.*
 import com.gerfrota.lite.ui.pneus.*
 import com.gerfrota.lite.ui.relatorios.*
-import com.gerfrota.lite.ui.theme.GerFrotaTheme
 import com.gerfrota.lite.ui.viagens.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
