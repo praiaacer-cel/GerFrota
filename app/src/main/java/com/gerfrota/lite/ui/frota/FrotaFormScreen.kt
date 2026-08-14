@@ -8,11 +8,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color          // ✅ ADICIONADO (usado em AnexoBotao e no botão SALVAR)
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp              // ✅ ADICIONADO (fontSize = 11.sp no AnexoBotao)
+import androidx.compose.ui.unit.sp
 import com.gerfrota.lite.core.VeiculoConstants
 import com.gerfrota.lite.data.DatabaseHelper
 import com.gerfrota.lite.ui.widgets.CampoData
@@ -20,8 +20,6 @@ import com.gerfrota.lite.ui.widgets.rememberAnexoPicker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-// ... (mantenha TODO o resto do código do anexo: @OptIn, fun FrotaFormScreen(...) e fun AnexoBotao(...))
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,9 +88,15 @@ fun FrotaFormScreen(id: Long, onBack: () -> Unit) {
 
     @Composable
     fun AnexoBotao(label: String, path: String?, pick: () -> Unit) {
-        Button(onClick = pick, colors = ButtonDefaults.buttonColors(
-            containerColor = if (path != null) Color(0xFF2E7D32) else Color(0xFF546E7A)),
-            modifier = Modifier.weight(1f).height(56.dp)) {
+        Button(
+            onClick = pick, 
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (path != null) Color(0xFF2E7D32) else Color(0xFF546E7A)
+            ),
+            modifier = Modifier
+                .weight(1f)
+                .height(56.dp)
+        ) {
             Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
     }

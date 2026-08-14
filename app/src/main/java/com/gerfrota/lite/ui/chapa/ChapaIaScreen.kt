@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.gerfrota.lite.ai.*
 import com.gerfrota.lite.core.PathHelper
+import com.gerfrota.lite.R
+import com.gerfrota.lite.ui.AzulCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -106,7 +108,8 @@ fun ChapaIaScreen(vm: ChapaIAViewModel, onBack: () -> Unit) {
                         FilledIconButton(
                             onClick = { vm.send(input); input = "" },
                             enabled = input.isNotBlank() && !gerando,
-                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFF1976D2)) {
+                            colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFF1976D2)) 
+                        ) {
                             Icon(Icons.AutoMirrored.Filled.Send, null, tint = Color.White)
                         }
                     }
