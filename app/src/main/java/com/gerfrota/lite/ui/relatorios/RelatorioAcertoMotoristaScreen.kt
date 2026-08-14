@@ -1,4 +1,4 @@
-package com.gerfrota.lite.ui.relatorios // OU com.gerfrota.lite.ui.motoristas (depende de onde está salvo)
+package com.gerfrota.lite.ui.relatorios // Use ui.motoristas se o arquivo estiver nesta pasta
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -16,11 +16,11 @@ import com.gerfrota.lite.data.DatabaseHelper
 import com.gerfrota.lite.data.RelatoriosDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-// ... (mantenha o resto do código da função abaixo)
+import kotlin.math.abs
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RelatorioAcertoMotoristaScreen() {
-    // ✅ Obtendo db internamente (casa com a chamada do MainActivity sem parâmetros)
     val ctx = LocalContext.current
     val db = remember { DatabaseHelper.get(ctx) }
     
@@ -50,7 +50,6 @@ fun RelatorioAcertoMotoristaScreen() {
     
     Scaffold(topBar = { TopAppBar(title = { Text("Acerto de Motorista") }) }) { pad ->
         Column(Modifier.padding(pad).padding(16.dp)) {
-            // ✅ Correção do tipo da lambda (n: String)
             DropdownSimples("Motorista", nomeSel, nomes) { n: String -> 
                 sel = motoristas.firstOrNull { db.str(it["nome"]) == n }?.get("id") as? Long 
             }
@@ -76,7 +75,7 @@ fun RelatorioAcertoMotoristaScreen() {
                 Surface(color = Color(0xFFE3F2FD), shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)) {
                     Text(
                         if (a.saldo >= 0) "A frota deve pagar ${DatabaseHelper.fmtBRL(a.saldo)} ao motorista pelas comissões do mês, já abatendo os vales."
-                        else "Atenção! O motorista retirou mais vales do que gerou em comissões. Ele está devendo ${DatabaseHelper.fmtBRL(kotlin.math.abs(a.saldo))} para a frota.",
+                        else "Atenção! O motorista retirou mais vales do que gerou em comissões. Ele está devendo ${DatabaseHelper.fmtBRL(abs(a.saldo))} para a frota.",
                         Modifier.padding(16.dp), fontSize = 14.sp
                     )
                 }

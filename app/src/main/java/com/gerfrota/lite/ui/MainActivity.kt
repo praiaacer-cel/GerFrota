@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.gerfrota.lite.ui.chapa.ChapaIaScreen 
 import com.gerfrota.lite.ai.ChapaIAViewModel
 import com.gerfrota.lite.data.DatabaseHelper
 import com.gerfrota.lite.services.MigracaoDados 
@@ -115,7 +116,7 @@ class MainActivity : ComponentActivity() {
                             b.arguments?.getLong("pneuId") ?: -1,
                             resultadoPneu,                                   // resultado do mapa de pneus
                             { b.savedStateHandle?.remove("resultado_pneu") },// consome o resultado
-                            nav
+                            { nav.popBackStack() }
                         )
                     }
                     composable("pneus_gestao/{placa}/{tipo}") { b ->

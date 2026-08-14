@@ -173,7 +173,14 @@ fun DialogPneu(
     var kmInst by remember { mutableStateOf(existente?.let { db.num(it["km_instalacao"]).toInt().toString() } ?: "") }
     var kmAtu by remember { mutableStateOf(existente?.let { db.num(it["km_atual"]).toInt().toString() } ?: "") }
 
-    if (codigo.isEmpty()) codigo = remember { db.proximoCodigoPneu() }
+    if (codigo.isEmpty()) {
+        scope.launch(Dispatchers.IO) {
+            val proximoCodigo = db.proximoCodigoPneu()
+            withContext(Dispatchers.Main) {
+                codigo = proximoCodigo
+            }
+        }
+    }
 
     AlertDialog(onDismissRequest = onDismiss,
         title = { Text("Pneu — Posição: $posicao", fontSize = 15.sp, fontWeight = FontWeight.Bold) },
