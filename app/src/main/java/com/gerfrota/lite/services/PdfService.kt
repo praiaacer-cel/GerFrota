@@ -21,25 +21,18 @@ class PdfWriter(private val w: Int, private val h: Int, private val margin: Floa
     private var open: PdfDocument.Page? = null
     private var canvas: Canvas? = null
     private var y = 0f
-    private var pageCount = 0
+    private var pageCount = 0 // ✅ Contador manual para evitar erro de 'doc.pageCount'
     private val pText = Paint().apply { isAntiAlias = true; textSize = 9f; color = Color.BLACK }
     private val pBold = Paint().apply { isAntiAlias = true; textSize = 10f; color = Color.BLACK; isFakeBoldText = true }
 
     private fun newPage() {
         open?.let { doc.finishPage(it) }
-
-class PdfWriter(private val w: Int, private val h: Int, private val margin: Float = 40f) {
-    private val doc = PdfDocument()
-    private var open: PdfDocument.Page? = null
-    private var canvas: Canvas? = null
-    private var y = 0f
-    private var pageCount = 0 // ✅ ADICIONE ESTA VARIÁVEL
-    private fun newPage() {
-        open?.let { doc.finishPage(it) }
-        pageCount++ // ✅ INCREMENTE AQUI
-        open = doc.startPage(PdfDocument.PageInfo.Builder(w, h, pageCount).create()) 
-        canvas = open!!.canvas; y = margin
+        pageCount++
+        open = doc.startPage(PdfDocument.PageInfo.Builder(w, h, pageCount).create())
+        canvas = open!!.canvas
+        y = margin
     }
+
     private fun ensure() { if (canvas == null) newPage() }
     private fun quebra() { if (y > h - margin) newPage() }
 
@@ -51,10 +44,10 @@ class PdfWriter(private val w: Int, private val h: Int, private val margin: Floa
         y += 56
     }
 
-    fun secao(t: String) { 
+    fun secao(t: String) {
         ensure(); quebra(); y += 6
         canvas!!.drawText(t.uppercase(), margin, y, Paint().apply { isAntiAlias = true; textSize = 10f; color = Color.rgb(25, 118, 210); isFakeBoldText = true })
-        y += 14 
+        y += 14
     }
 
     fun linha(label: String, valor: String) {
@@ -89,13 +82,8 @@ object PdfService {
     private const val A4W = 595; private const val A4H = 842
     private const val A6W = 297; private const val A6H = 419
 
-    private fun pasta(ctx: Context, vararg sub: String) =
-        File(PathHelper.pastaDocumentosGerFrota(ctx), sub.joinToString("/"))
-
-    // ✅ NOVA FUNÇÃO: Formatação de moeda
     private fun fmt(v: Double) = DatabaseHelper.fmtBRL(v)
 
-    /** Card A6 de manutenção (salva em CardsManutencao). */
     fun gerarCardA6(ctx: Context, m: Map<String, Any?>, placa: String): File {
         val db = DatabaseHelper.get(ctx)
         val wp = PdfWriter(A6W, A6H, 24f)
@@ -110,7 +98,6 @@ object PdfService {
         wp.salvar(f); return f
     }
 
-    /** Ficha A4 do veículo (DocumentosGerFrota/Veiculos). */
     fun gerarFichaVeiculo(ctx: Context, v: Map<String, Any?>): File {
         val db = DatabaseHelper.get(ctx)
         val wp = PdfWriter(A4W, A4H)
@@ -127,7 +114,6 @@ object PdfService {
         wp.salvar(f); return f
     }
 
-    /** Ficha A4 do motorista (DocumentosGerFrota/Motoristas). */
     fun gerarFichaMotorista(ctx: Context, m: Map<String, Any?>): File {
         val db = DatabaseHelper.get(ctx)
         val wp = PdfWriter(A4W, A4H)
@@ -149,10 +135,8 @@ object PdfService {
         wp.salvar(f); return f
     }
 
-    /** Acerto de contas A4 (DocumentosGerFrota/AcertosMotoristas). */
     fun gerarAcertoPdf(ctx: Context, nomeMotorista: String, periodo: String,
                        itens: List<Triple<String, String, String>>, totalLiquido: String): File {
-        val db = DatabaseHelper.get(ctx)
         val wp = PdfWriter(A4W, A4H)
         wp.header("ACERTO DE CONTAS", "Motorista: $nomeMotorista | Período: $periodo")
         for ((titulo, detalhe, valor) in itens) {
@@ -164,7 +148,6 @@ object PdfService {
         wp.salvar(f); return f
     }
 
-    /** Relatório de Viagem A4 (salva em ViagensFretes). */
     fun gerarRelatorioViagem(ctx: Context, v: Map<String, Any?>): File {
         val db = DatabaseHelper.get(ctx)
         val wp = PdfWriter(595, 842)
@@ -184,23 +167,18 @@ object PdfService {
         wp.salvar(f); return f
     }
 
-    /** Mescla PDFs anexos ao PDF base usando PdfRenderer (100% nativo). */
     fun mesclarPdfs(base: File, anexos: List<File>, out: File) {
         val doc = PdfDocument()
         var n = 1
         fun add(file: File) {
-            // ✅ CORREÇÃO: Usando os imports diretos para evitar Unresolved reference
             val fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
             val renderer = PdfRenderer(fd)
-            
-            // ✅ Agora o pageCount é perfeitamente reconhecido
             for (i in 0 until renderer.pageCount) {
                 val page = renderer.openPage(i)
                 val bmp = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
                 bmp.eraseColor(Color.WHITE)
                 page.render(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                 page.close()
-                
                 val info = PdfDocument.PageInfo.Builder(page.width, page.height, n++).create()
                 val p = doc.startPage(info)
                 p.canvas.drawBitmap(bmp, 0f, 0f, null)
@@ -210,14 +188,12 @@ object PdfService {
             renderer.close()
             fd.close()
         }
-        
         add(base)
         anexos.forEach { runCatching { add(it) } }
         out.outputStream().use { doc.writeTo(it) }
         doc.close()
     }
 
-    /** Compartilha via ACTION_SEND + FileProvider. */
     fun compartilhar(ctx: Context, file: File) {
         val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.fileprovider", file)
         val intent = Intent(Intent.ACTION_SEND).apply {

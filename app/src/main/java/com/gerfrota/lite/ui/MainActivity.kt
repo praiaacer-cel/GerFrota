@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
                     }
                     // ---- DASHBOARD (recebe SOMENTE a lambda de navegação) ----
                     composable("dashboard") { DashboardScreen(nav::navigate) }
-                    composable("chapa") { ChapaIAScreen(chapaVm) { nav.popBackStack() } }
+                    composable("chapa") { ChapaIaScreen(chapaVm) { nav.popBackStack() } }
 
                     // ---- FROTA ----
                     composable("frota") { FrotaListScreen(nav) }
@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
                             b.arguments?.getLong("id") ?: -1,
                             b.arguments?.getLong("ini") ?: 0,
                             b.arguments?.getLong("fim") ?: 0,
-                            onBack = { nav.popBackStack() }
+                            nav
                         )
                     }
 
