@@ -9,7 +9,7 @@ object DriveBackupService {
     
     suspend fun backupCompleto(ctx: Context, prefs: SharedPreferences): String {
         // 1. Gera o ZIP local
-        val zip = BackupService.criarBackup(ctx) ?: return "Falha ao gerar o ZIP de backup."
+        val zip = BackupService.criarBackupCompactado(ctx) ?: return "Falha ao gerar o ZIP de backup."
         
         // 2. Busca o token salvo nas preferências (evita depender da Activity/GoogleAuthHelper)
         val token = prefs.getString("conta_token", null)

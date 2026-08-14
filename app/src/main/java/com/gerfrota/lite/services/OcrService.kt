@@ -1,28 +1,23 @@
-package com.gerfrota.lite.services
+package com.gerfrota.lite.ai
 
-import android.content.Context
-import android.net.Uri
+import android.graphics.BitmapFactory
+import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.Dispatchers
-import java.io.File
-import kotlin.coroutines.resume
 
-class OcrService(private val context: Context) {
+class OcrService {
+    private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
-    /** Lê o texto de uma imagem (nota fiscal, recibo) usando ML Kit on-device. */
-    suspend fun lerImagem(path: String): String = withContext(Dispatchers.IO) {
-        try {
-            val input = InputImage.fromFilePath(context, Uri.fromFile(File(path)))
-            val recognizer = TextRecognition.getClient(TextRecognizerOptions.Builder().build())
-            suspendCancellableCoroutine { cont ->
-                recognizer.process(input)
-                    .addOnSuccessListener { cont.resume(it.text) }
-                    .addOnFailureListener { cont.resume("") }
-            }
-        } catch (e: Exception) { "" }
+    fun lerImagem(imagePath: String): String {
+        return try {
+            val bitmap = BitmapFactory.decodeFile(imagePath) ?: return ""
+            val image = InputImage.fromBitmap(bitmap, 0)
+            val task = recognizer.process(image)
+            val result = Tasks.await(task) // Aguarda o ML Kit processar a imagem
+            result.text
+        } catch (e: Exception) {
+            ""
+        }
     }
 }

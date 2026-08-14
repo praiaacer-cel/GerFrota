@@ -21,15 +21,25 @@ class PdfWriter(private val w: Int, private val h: Int, private val margin: Floa
     private var open: PdfDocument.Page? = null
     private var canvas: Canvas? = null
     private var y = 0f
+    private var pageCount = 0
     private val pText = Paint().apply { isAntiAlias = true; textSize = 9f; color = Color.BLACK }
     private val pBold = Paint().apply { isAntiAlias = true; textSize = 10f; color = Color.BLACK; isFakeBoldText = true }
 
     private fun newPage() {
         open?.let { doc.finishPage(it) }
-        open = doc.startPage(PdfDocument.PageInfo.Builder(w, h, doc.pageCount + 1).create())
+
+class PdfWriter(private val w: Int, private val h: Int, private val margin: Float = 40f) {
+    private val doc = PdfDocument()
+    private var open: PdfDocument.Page? = null
+    private var canvas: Canvas? = null
+    private var y = 0f
+    private var pageCount = 0 // ✅ ADICIONE ESTA VARIÁVEL
+    private fun newPage() {
+        open?.let { doc.finishPage(it) }
+        pageCount++ // ✅ INCREMENTE AQUI
+        open = doc.startPage(PdfDocument.PageInfo.Builder(w, h, pageCount).create()) 
         canvas = open!!.canvas; y = margin
     }
-
     private fun ensure() { if (canvas == null) newPage() }
     private fun quebra() { if (y > h - margin) newPage() }
 

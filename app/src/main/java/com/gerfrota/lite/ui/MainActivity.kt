@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
                     }
                     // ---- DASHBOARD (recebe SOMENTE a lambda de navegação) ----
                     composable("dashboard") { DashboardScreen(nav::navigate) }
-                    composable("chapa") { ChapaIaScreen(chapaVm) { nav.popBackStack() } }
+                    composable("chapa") { ChapaIAScreen(chapaVm) { nav.popBackStack() } }
 
                     // ---- FROTA ----
                     composable("frota") { FrotaListScreen(nav) }
@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
                             b.arguments?.getLong("id") ?: -1,
                             b.arguments?.getLong("ini") ?: 0,
                             b.arguments?.getLong("fim") ?: 0,
-                            nav                      // ✅ 4º parâmetro é o NavController, não lambda
+                            onBack = { nav.popBackStack() }
                         )
                     }
 
@@ -222,8 +222,16 @@ class MainActivity : ComponentActivity() {
                     composable("rel_pneus") { RelatorioDesempenhoPneusScreen() }
                     composable("rel_comb") { RelatorioCombustivelScreen() }
                     composable("rel_manut") { RelatorioManutencaoScreen() }
-                    composable("rel_fluxo") { RelatorioFluxoCaixaScreen() }
-                    composable("rel_receber") { RelatorioContasReceberScreen() }
+                    composable("rel_fluxo") { 
+                        val ctx = LocalContext.current
+                        val db = remember { DatabaseHelper.get(ctx) }
+                        RelatorioFluxoCaixaScreen(db) 
+                    }
+                    composable("rel_receber") {
+                        val ctx = LocalContext.current
+                        val db = remember { DatabaseHelper.get(ctx) }
+                        RelatorioContasReceberScreen(db) 
+                    }
                 }
             }
         }

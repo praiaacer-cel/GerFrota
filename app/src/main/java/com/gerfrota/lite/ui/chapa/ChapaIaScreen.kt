@@ -33,7 +33,7 @@ import com.gerfrota.lite.ui.AzulCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChapaIaScreen(vm: ChapaIAViewModel, onBack: () -> Unit) {
+fun ChapaIAScreen(vm: ChapaIAViewModel, onBack: () -> Unit) {
     val ctx = LocalContext.current
     val msgs by vm.messages.collectAsState()
     val status by vm.status.collectAsState()

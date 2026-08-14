@@ -87,16 +87,10 @@ fun FrotaFormScreen(id: Long, onBack: () -> Unit) {
     }
 
     @Composable
-    fun AnexoBotao(label: String, path: String?, pick: () -> Unit) {
-        Button(
-            onClick = pick, 
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (path != null) Color(0xFF2E7D32) else Color(0xFF546E7A)
-            ),
-            modifier = Modifier
-                .weight(1f)
-                .height(56.dp)
-        ) {
+    fun AnexoBotao(label: String, path: String?, pick: () -> Unit, modifier: Modifier = Modifier) {
+        Button(onClick = pick, colors = ButtonDefaults.buttonColors(
+            containerColor = if (path != null) Color(0xFF2E7D32) else Color(0xFF546E7A)),
+            modifier = modifier.height(56.dp)) { // ✅ Removido .weight(1f) daqui
             Text(label, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
     }
@@ -143,9 +137,9 @@ fun FrotaFormScreen(id: Long, onBack: () -> Unit) {
 
             Text("Anexos de Documentos", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                AnexoBotao(if (pathFotoVeiculo != null) "Foto Veículo ✓" else "Foto Veículo", pathFotoVeiculo, pickFotoVeic)
-                AnexoBotao(if (pathFotoPlaca != null) "Foto Placa ✓" else "Foto Placa", pathFotoPlaca, pickFotoPlaca)
-            }
+                AnexoBotao("Foto Veículo", pathFotoVeiculo, pickFotoVeic, Modifier.weight(1f))
+                AnexoBotao("Foto Placa", pathFotoPlaca, pickFotoPlaca, Modifier.weight(1f))
+}
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 AnexoBotao(if (pathCrlv != null) "CRLV ✓" else "CRLV", pathCrlv, pickCrlv)
                 AnexoBotao(if (pathAntt != null) "ANTT ✓" else "ANTT", pathAntt, pickAntt)

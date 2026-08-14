@@ -24,7 +24,7 @@ class ChapaIAViewModel(app: Application) : AndroidViewModel(app) {
     private val db = DatabaseHelper.get(app)
     private val files = FileSearchService(app)
     private val rag = RagService(db, files)
-    private val ocr = OcrService(app) // <-- INTEGRAÇÃO DO OCR
+    private val ocr = OcrService()
 
     private val _messages = MutableStateFlow<List<ChatMsg>>(emptyList())
     val messages = _messages.asStateFlow()

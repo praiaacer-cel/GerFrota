@@ -1,5 +1,5 @@
 package com.gerfrota.lite.ui.pneus
-
+import androidx.compose.ui.draw.clip
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
