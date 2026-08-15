@@ -127,7 +127,6 @@ class MainActivity : ComponentActivity() {
                         val v = remember { db.queryAll("frota").firstOrNull { db.str(it["placa"]) == placa } }
                         PneusGestaoScreen(
                             placa, tipo,
-                            db.str(v?.get("marca")), db.str(v?.get("modelo")),
                             onMap = { nav.navigate("pneus_map/$placa/${enc(tipo)}/0") },
                             onServicos = { nav.navigate("pneus_servicos/$placa") },
                             onRodizio = { nav.navigate("pneus_rodizio/$placa/${enc(tipo)}") },

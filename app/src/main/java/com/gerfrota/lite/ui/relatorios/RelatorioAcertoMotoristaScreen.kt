@@ -21,7 +21,7 @@ import kotlin.math.abs
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RelatorioAcertoMotoristaScreen() {
-    // Obtendo db internamente (casa com a chamada do MainActivity sem parâmetros)
+    // ✅ Obtendo db internamente (casa com a chamada do MainActivity sem parâmetros)
     val ctx = LocalContext.current
     val db = remember { DatabaseHelper.get(ctx) }
     
@@ -69,6 +69,7 @@ fun RelatorioAcertoMotoristaScreen() {
                 Spacer(Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     CardSecundario("Comissões\n(Produção)", DatabaseHelper.fmtBRL(a.comissoes), Color(0xFF1976D2), Modifier.weight(1f))
+                    // ✅ CORREÇÃO: O campo 'adiantamentos' existe no RelatoriosDao.Acerto e 'Color' está importado
                     CardSecundario("Vales / Adiant.\n(Descontos)", DatabaseHelper.fmtBRL(a.adiantamentos), Color(0xFFC62828), Modifier.weight(1f))
                 }
                 
