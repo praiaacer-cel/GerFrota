@@ -159,6 +159,7 @@ fun PneuBotao(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialogPneu(
     posicao: String, existente: Map<String, Any?>?, placa: String,
@@ -174,19 +175,24 @@ fun DialogPneu(
     var kmInst by remember { mutableStateOf(existente?.let { db.num(it["km_instalacao"]).toInt().toString() } ?: "") }
     var kmAtu by remember { mutableStateOf(existente?.let { db.num(it["km_atual"]).toInt().toString() } ?: "") }
 
-    if (codigo.isEmpty()) {
-        scope.launch(Dispatchers.IO) {
-            val proximoCodigo = db.proximoCodigoPneu()
-            withContext(Dispatchers.Main) {
-                codigo = proximoCodigo
+    // ✅ CORREÇÃO: LaunchedEffect garante que o código seja buscado APENAS UMA VEZ 
+    // quando o Dialog é aberto (e não a cada recomposição de tela).
+    LaunchedEffect(existente) {
+        if (codigo.isEmpty() && existente == null) {
+            withContext(Dispatchers.IO) {
+                val proximoCodigo = db.proximoCodigoPneu()
+                withContext(Dispatchers.Main) {
+                    codigo = proximoCodigo
+                }
             }
         }
     }
 
-    AlertDialog(onDismissRequest = onDismiss,
+    AlertDialog(
+        onDismissRequest = onDismiss,
         title = { Text("Pneu — Posição: $posicao", fontSize = 15.sp, fontWeight = FontWeight.Bold) },
         text = {
-            Column(Modifier.verticalScroll(remember { androidx.compose.foundation.rememberScrollState() })) {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 OutlinedTextField(codigo, { codigo = it }, label = { Text("Código do Pneu") },
                     readOnly = true, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(marca, { marca = it }, label = { Text("Marca") }, modifier = Modifier.fillMaxWidth())
@@ -212,7 +218,7 @@ fun DialogPneu(
                     )
                     val id = existente?.get("id") as? Long
                     if (id != null) db.update("pneus", id, mapa) else db.insert("pneus", mapa)
-                    onSaved()
+                    withContext(Dispatchers.Main) { onSaved() }
                 }
             }) { Text("Salvar") }
         },
@@ -223,11 +229,13 @@ fun DialogPneu(
                         onClick = {
                             scope.launch(Dispatchers.IO) {
                                 (existente["id"] as? Long)?.let { db.delete("pneus", it) }
-                                onSaved()
+                                withContext(Dispatchers.Main) { onSaved() }
                             }
                         }) { Text("Excluir") }
                 }
                 TextButton(onClick = onDismiss) { Text("Cancelar") }
             }
-        })
+        }
+    )
+}
 }
