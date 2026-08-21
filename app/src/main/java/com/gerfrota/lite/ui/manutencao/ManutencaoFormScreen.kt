@@ -212,8 +212,7 @@ fun ManutencaoFormScreen(
 }
 
 // ✅ CORREÇÃO: Campo recebe o modifier por parâmetro (weight só existe dentro de Row/Column)
-@Composable
-fun Campo(label: String, value: String, modifier: Modifier = Modifier.fillMaxWidth(), on: (String) -> Unit) {
+@Composable fun Campo(label: String, value: String, modifier: Modifier = Modifier.fillMaxWidth(), on: (String) -> Unit) {
     OutlinedTextField(value, on, label = { Text(label) }, modifier = modifier)
 }
 

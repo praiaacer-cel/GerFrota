@@ -87,7 +87,7 @@ fun MotoristaFormScreen(id: Long, onBack: () -> Unit) {
                 CampoForm("Categoria", categoria, Modifier.weight(1f)) { categoria = it }
             }
             Row {
-                CampoData("Venc. CNH", vencCnh, { vencCnh = it }, Modifier.weight(1f))
+                CampoData("Venc. CNH", vencCnh, Modifier.weight(1f)) { vencCnh = it }
                 Spacer(Modifier.width(8.dp))
                 CampoForm("Comissão %", comissao, Modifier.weight(1f)) { comissao = it }
             }
@@ -107,7 +107,7 @@ fun MotoristaFormScreen(id: Long, onBack: () -> Unit) {
             Row {
                 CampoForm("Cód. Banco", codBanco, Modifier.weight(1f)) { codBanco = it }
                 Spacer(Modifier.width(8.dp))
-                CampoForm("Banco", banco, Modifier.weight(2f)) { banco = it }
+                CampoForm("Banco", banco, Modifier.weight(1f)) { banco = it }
             }
             Row {
                 CampoForm("Agência", agencia, Modifier.weight(1f)) { agencia = it }
@@ -124,7 +124,6 @@ fun MotoristaFormScreen(id: Long, onBack: () -> Unit) {
     }
 }
 
-@Composable
-fun CampoForm(label: String, value: String, modifier: Modifier = Modifier, on: (String) -> Unit) {
+@Composable fun Campo(label: String, value: String, modifier: Modifier = Modifier.fillMaxWidth(), on: (String) -> Unit) {
     OutlinedTextField(value, on, label = { Text(label) }, modifier = modifier)
 }
