@@ -127,3 +127,7 @@ fun MotoristaFormScreen(id: Long, onBack: () -> Unit) {
 @Composable fun Campo(label: String, value: String, modifier: Modifier = Modifier.fillMaxWidth(), on: (String) -> Unit) {
     OutlinedTextField(value, on, label = { Text(label) }, modifier = modifier)
 }
+@Composable
+fun CampoForm(label: String, value: String, modifier: Modifier = Modifier, on: (String) -> Unit) {
+    OutlinedTextField(value, on, label = { Text(label) }, modifier = modifier)
+}

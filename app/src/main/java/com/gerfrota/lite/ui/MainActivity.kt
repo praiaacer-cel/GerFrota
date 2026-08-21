@@ -66,9 +66,6 @@ class MainActivity : ComponentActivity() {
                     composable("pneus_gestao/{placa}/{tipo}") { b ->
                         val placa = b.arguments?.getString("placa") ?: ""
                         val tipo = dec(b.arguments?.getString("tipo") ?: "")
-                        val ctx = LocalContext.current
-                        val db = remember { DatabaseHelper.get(ctx) }
-                        val v = remember { db.queryAll("frota").firstOrNull { db.str(it["placa"]) == placa } }
                         PneusGestaoScreen(placa, tipo, db.str(v?.get("marca")), db.str(v?.get("modelo")),
                             onMap = { nav.navigate("pneus_map/$placa/${enc(tipo)}/0") },
                             onServicos = { nav.navigate("pneus_servicos/$placa") },

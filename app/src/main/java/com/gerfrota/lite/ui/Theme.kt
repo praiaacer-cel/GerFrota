@@ -59,9 +59,7 @@ fun GerFrotaTheme(
     MaterialTheme(
         colorScheme = lightColorScheme(
             primary = AzulPrimario, secondary = LaranjaAccent,
-            surface = Fundo, background = Fundo
-        ),
-        // ❌ REMOVIDO: typography = Typography, (Evita erro se Type.kt não existir)
+            surface = Fundo, background = Fundo),
         content = content
     )
 }
