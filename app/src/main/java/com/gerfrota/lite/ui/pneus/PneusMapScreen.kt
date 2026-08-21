@@ -1,9 +1,10 @@
 package com.gerfrota.lite.ui.pneus
-import androidx.compose.ui.draw.clip
+
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -12,13 +13,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.gerfrota.lite.core.VeiculoConstants
 import com.gerfrota.lite.data.DatabaseHelper
 import com.gerfrota.lite.data.proximoCodigoPneu
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +31,7 @@ import java.util.*
 data class EixoLayout(val tag: String, val posicoes: List<String>)
 
 fun eixosDoTipo(tipo: String?): List<EixoLayout> {
-    val t = (tipo ?: "").lowercase()
+    val t = (tipo ?: " ").lowercase()
     val diant = EixoLayout("1º EIXO - DIANTEIRO", listOf("Dianteiro Esquerdo", "Dianteiro Direito"))
     val trac1 = EixoLayout("2º EIXO - TRAÇÃO", listOf(
         "Tração 1° Eixo Esq. Fora", "Tração 1° Eixo Esq. Dentro",
@@ -39,6 +40,7 @@ fun eixosDoTipo(tipo: String?): List<EixoLayout> {
         "Tração 2° Eixo Esq. Fora", "Tração 2° Eixo Esq. Dentro",
         "Tração 2° Eixo Dir. Fora", "Tração 2° Eixo Dir. Dentro"))
     val trac2 = EixoLayout("4º EIXO - TRUCK", truck.posicoes)
+    
     return when {
         t.contains("bitruck") -> listOf(diant,
             EixoLayout("2º EIXO - BI-TRUCK", listOf("Bi-truck Dianteiro Esquerdo", "Bi-truck Dianteiro Direito")),
@@ -73,6 +75,7 @@ fun PneusMapScreen(
                       !db.str(it["status"]).equals("Descartado", true) }
             .associateBy { db.str(it["posicao_atual"]).uppercase() }
     }
+
     LaunchedEffect(Unit) { carregar() }
 
     Scaffold(topBar = {
@@ -117,8 +120,11 @@ fun PneusMapScreen(
     editando?.let { (posicao, existente) ->
         DialogPneu(posicao, existente, placa, db,
             onDismiss = { editando = null },
-            onSaved = { editando = null; carregar()
-                Toast.makeText(ctx, "Pneu salvo!", Toast.LENGTH_SHORT).show() })
+            onSaved = { 
+                editando = null
+                carregar()
+                Toast.makeText(ctx, "Pneu salvo!", Toast.LENGTH_SHORT).show() 
+            })
     }
 }
 
@@ -140,6 +146,7 @@ fun PneuBotao(
     val preenchido = pneu != null
     val fundo = if (preenchido) Color(0xFF2E7D32) else Color(0xFFBDBDBD)
     val borda = if (preenchido) Color(0xFF1B5E20) else Color(0xFF757575)
+    
     Column(Modifier.width(54.dp).height(82.dp).padding(horizontal = 4.dp)
         .clip(RoundedCornerShape(6.dp)).background(fundo)
         .border(2.dp, borda, RoundedCornerShape(6.dp))
@@ -175,8 +182,6 @@ fun DialogPneu(
     var kmInst by remember { mutableStateOf(existente?.let { db.num(it["km_instalacao"]).toInt().toString() } ?: "") }
     var kmAtu by remember { mutableStateOf(existente?.let { db.num(it["km_atual"]).toInt().toString() } ?: "") }
 
-    // ✅ CORREÇÃO: LaunchedEffect garante que o código seja buscado APENAS UMA VEZ 
-    // quando o Dialog é aberto (e não a cada recomposição de tela).
     LaunchedEffect(existente) {
         if (codigo.isEmpty() && existente == null) {
             withContext(Dispatchers.IO) {
@@ -237,5 +242,4 @@ fun DialogPneu(
             }
         }
     )
-}
 }
