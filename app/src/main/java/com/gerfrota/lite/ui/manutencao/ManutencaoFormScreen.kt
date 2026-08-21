@@ -35,7 +35,6 @@ fun ManutencaoFormScreen(
     val ctx = LocalContext.current
     val db = remember { DatabaseHelper.get(ctx) }
     val scope = rememberCoroutineScope()
-
     var data by remember { mutableStateOf(SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")).format(Date())) }
     var km by remember { mutableStateOf("") }
     var sistema by remember { mutableStateOf<String?>(null) }
@@ -83,17 +82,17 @@ fun ManutencaoFormScreen(
     }
 
     val pickNota = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-       uri?.let {
-           scope.launch(Dispatchers.IO) {
-               val pasta = PathHelper.pastaNotasServicos(ctx)          // ✅ era File(db.baseDir(), "NotasdosServicos")
-               val ext = ctx.contentResolver.getType(it)?.substringAfter('/') ?: "jpg"
-               val nome = "${placa}_${nf.ifBlank { "SEM_NOTA" }}.$ext"
-               val dest = File(pasta, nome)
-               ctx.contentResolver.openInputStream(it)?.use { inp -> dest.outputStream().use { o -> inp.copyTo(o) } }
-               pathNota = dest.absolutePath
-           }
-       }
-   }
+        uri?.let {
+            scope.launch(Dispatchers.IO) {
+                val pasta = PathHelper.pastaNotasServicos(ctx)
+                val ext = ctx.contentResolver.getType(it)?.substringAfter('/') ?: "jpg"
+                val nome = "${placa}_${nf.ifBlank { "SEM_NOTA" }}.$ext"
+                val dest = File(pasta, nome)
+                ctx.contentResolver.openInputStream(it)?.use { inp -> dest.outputStream().use { o -> inp.copyTo(o) } }
+                pathNota = dest.absolutePath
+            }
+        }
+    }
 
     fun salvar() = scope.launch(Dispatchers.IO) {
         val valorDouble = DatabaseHelper.parseMoney(valor)
@@ -147,19 +146,22 @@ fun ManutencaoFormScreen(
         val os = idOS.toString().padStart(5, '0')
         val bloco = "OS: $os\nData: $data | KM: $km | $sistema - $subsistema\n" +
             "Serviço: $tipoServico | Obs: $obs\nValor: $valorDb | Prestador: $prestador | Nota: $nf\n"
-        val f = PathHelper.prontuarioPlaca(ctx, placa)   // ✅ era File(File(db.baseDir(), "ProntuarioPlaca")...)
+        val f = PathHelper.prontuarioPlaca(ctx, placa)
         val sep = "-".repeat(60) + "\n"
         val existentes = if (f.exists()) f.readText().split(sep).map { it.trim() }
             .filter { it.isNotEmpty() && !it.contains("OS: $os") } else emptyList()
         f.writeText((existentes + bloco.trim()).joinToString(sep) { it + "\n" } + sep)
-
         nav.popBackStack()
     }
 
     Scaffold(topBar = { TopAppBar(title = { Text("CADASTRO DE MANUTENÇÃO") },
         navigationIcon = { IconButton(onClick = { nav.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) } }) }) { pad ->
         Column(Modifier.padding(pad).padding(14.dp).verticalScroll(rememberScrollState())) {
-            Row { Campo("Data", data) { data = it }; Spacer(Modifier.width(8.dp)); Campo("KM", km) { km = it } }
+            Row {
+                Campo("Data", data, Modifier.weight(1f)) { data = it }
+                Spacer(Modifier.width(8.dp))
+                Campo("KM", km, Modifier.weight(1f)) { km = it }
+            }
             DropdownSistema(sistema, estrutura.keys.toList()) { sistema = it; subsistema = null; pneuTipo = null }
             if (sistema == "Pneus") {
                 OutlinedButton(onClick = {
@@ -190,7 +192,11 @@ fun ManutencaoFormScreen(
                 Campo("Tipo de Serviço", tipoServico) { tipoServico = it }
             }
             Campo("Observação", obs) { obs = it }
-            Row { Campo("Valor R$", valor) { valor = it }; Spacer(Modifier.width(8.dp)); Campo("NF", nf) { nf = it } }
+            Row {
+                Campo("Valor R$", valor, Modifier.weight(1f)) { valor = it }
+                Spacer(Modifier.width(8.dp))
+                Campo("NF", nf, Modifier.weight(1f)) { nf = it }
+            }
             Campo("Prestador", prestador) { prestador = it }
             Row(Modifier.padding(vertical = 8.dp)) {
                 Button(onClick = { pickNota.launch("*/*") },
@@ -205,11 +211,15 @@ fun ManutencaoFormScreen(
     }
 }
 
-@Composable fun Campo(label: String, value: String, on: (String) -> Unit) {
-    OutlinedTextField(value, on, label = { Text(label) }, modifier = Modifier.weight(1f))
+// ✅ CORREÇÃO: Campo recebe o modifier por parâmetro (weight só existe dentro de Row/Column)
+@Composable
+fun Campo(label: String, value: String, modifier: Modifier = Modifier.fillMaxWidth(), on: (String) -> Unit) {
+    OutlinedTextField(value, on, label = { Text(label) }, modifier = modifier)
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable fun DropdownSistema(value: String?, opcoes: List<String>, on: (String) -> Unit) {
+@Composable
+fun DropdownSistema(value: String?, opcoes: List<String>, on: (String) -> Unit) {
     var exp by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = exp, onExpandedChange = { exp = it }) {
         OutlinedTextField(value ?: "", {}, readOnly = true, label = { Text("SISTEMA") },
@@ -218,8 +228,10 @@ fun ManutencaoFormScreen(
         ExposedDropdownMenu(exp, { exp = false }) { opcoes.forEach { o -> DropdownMenuItem({ Text(o) }, { on(o) }) } }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable fun DropdownSimples(label: String, value: String?, opcoes: List<String>, on: (String) -> Unit) {
+@Composable
+fun DropdownSimples(label: String, value: String?, opcoes: List<String>, on: (String) -> Unit) {
     var exp by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = exp, onExpandedChange = { exp = it }) {
         OutlinedTextField(value ?: "", {}, readOnly = true, label = { Text(label) },
