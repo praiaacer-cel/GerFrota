@@ -15,18 +15,13 @@ import com.gerfrota.lite.data.RelatoriosDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RelatorioCombustivelScreen() {
     val ctx = LocalContext.current
     val db = remember { DatabaseHelper.get(ctx) }
     var lista by remember { mutableStateOf<List<RelatoriosDao.Consumo>>(emptyList()) }
-    
-    LaunchedEffect(Unit) { 
-        withContext(Dispatchers.IO) { 
-            lista = RelatoriosDao.consumoPorVeiculo(db) 
-        } 
-    }
-    
+    LaunchedEffect(Unit) { withContext(Dispatchers.IO) { lista = RelatoriosDao.consumoPorVeiculo(db) } }
     Scaffold(topBar = { TopAppBar(title = { Text("Consumo de Combustível") }) }) { pad ->
         LazyColumn(Modifier.padding(pad).padding(12.dp)) {
             items(lista) { c ->
@@ -34,13 +29,7 @@ fun RelatorioCombustivelScreen() {
                     ListItem(
                         headlineContent = { Text(c.placa, fontWeight = FontWeight.Bold) },
                         supportingContent = { Text("${"%.1f".format(c.km)} km | ${"%.1f".format(c.litros)} L") },
-                        trailingContent = { 
-                            Text(
-                                "${"%.2f".format(c.media)} km/L",
-                                fontWeight = FontWeight.Black,
-                                color = if (c.media > 2.5) Color(0xFF2E7D32) else Color(0xFFC62828)
-                            ) 
-                        }
+                        trailingContent = { Text("${"%.2f".format(c.media)} km/L", fontWeight = FontWeight.Black, color = if (c.media > 2.5) Color(0xFF2E7D32) else Color(0xFFC62828)) }
                     )
                 }
             }
