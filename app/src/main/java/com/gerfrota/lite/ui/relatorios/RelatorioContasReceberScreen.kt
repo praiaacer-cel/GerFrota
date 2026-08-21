@@ -17,28 +17,22 @@ import com.gerfrota.lite.data.RelatoriosDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RelatorioContasReceberScreen() {
     val ctx = LocalContext.current
     val db = remember { DatabaseHelper.get(ctx) }
     var contas by remember { mutableStateOf<List<RelatoriosDao.ContaReceber>>(emptyList()) }
-    
-    LaunchedEffect(Unit) { 
-        withContext(Dispatchers.IO) { contas = RelatoriosDao.contasReceber(db) } 
-    }
-    
+    LaunchedEffect(Unit) { withContext(Dispatchers.IO) { contas = RelatoriosDao.contasReceber(db) } }
     val total = contas.sumOf { it.valor }
-    
     Scaffold(topBar = { TopAppBar(title = { Text("Contas a Receber") }) }) { pad ->
         LazyColumn(Modifier.padding(pad).padding(12.dp)) {
-            item { 
-                CardDestaque("TOTAL A RECEBER", DatabaseHelper.fmtBRL(total), Color(0xFF2E7D32), Icons.Default.Payments) 
-            }
+            item { CardDestaque("TOTAL A RECEBER", DatabaseHelper.fmtBRL(total), Color(0xFF2E7D32), Icons.Default.Payments) }
             items(contas) { c -> 
                 Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                     ListItem(
                         headlineContent = { Text(c.empresa.ifBlank { "Sem empresa" }, fontWeight = FontWeight.Bold) },
-                        supportingContent = { Text("Viagem: ${c.nro} | Data Carga: ${c.dataCarga}") },
+                        supportingContent = { Text("Viagem ${c.nro} | ${c.dataCarga}") },
                         trailingContent = { Text(DatabaseHelper.fmtBRL(c.valor), fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32)) }
                     )
                 }
