@@ -1,5 +1,4 @@
 package com.gerfrota.lite.ui.motoristas
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
@@ -25,6 +24,7 @@ import kotlin.math.abs
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RelatorioAcertoMotoristaScreen() {
+    // ✅ Obtendo db internamente (casa com a chamada do MainActivity sem parâmetros)
     val ctx = LocalContext.current
     val db = remember { DatabaseHelper.get(ctx) }
     
