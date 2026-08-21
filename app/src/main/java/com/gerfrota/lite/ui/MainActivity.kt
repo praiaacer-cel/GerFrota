@@ -31,9 +31,7 @@ import java.net.URLEncoder
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        lifecycleScope.launch(Dispatchers.IO) {
-            MigracaoDados.importarSeNecessario(this@MainActivity)
-        }
+        lifecycleScope.launch(Dispatchers.IO) { MigracaoDados.importarSeNecessario(this@MainActivity) }
         val prefs = getSharedPreferences("gerfrota", MODE_PRIVATE)
         setContent {
             GerFrotaTheme {
@@ -52,9 +50,7 @@ class MainActivity : ComponentActivity() {
                     composable("motorista_detail/{id}") { b -> MotoristaDetailScreen(b.arguments?.getLong("id") ?: -1) { nav.popBackStack() } }
                     composable("adiantamentos/{id}") { b -> AdiantamentosScreen(b.arguments?.getLong("id") ?: -1, nav) }
                     composable("acerto_periodo/{id}") { b -> AcertoPeriodoScreen(b.arguments?.getLong("id") ?: -1, nav) }
-                    composable("acerto_contas/{id}/{ini}/{fim}") { b ->
-                        AcertoContasScreen(b.arguments?.getLong("id") ?: -1, b.arguments?.getLong("ini") ?: 0, b.arguments?.getLong("fim") ?: 0, nav)
-                    }
+                    composable("acerto_contas/{id}/{ini}/{fim}") { b -> AcertoContasScreen(b.arguments?.getLong("id") ?: -1, b.arguments?.getLong("ini") ?: 0, b.arguments?.getLong("fim") ?: 0, nav) }
                     composable("conjuntos") { ConjuntosListScreen(onNovo = { nav.navigate("conjunto_form/-1") }, onEditar = { id -> nav.navigate("conjunto_form/$id") }, onBack = { nav.popBackStack() }) }
                     composable("conjunto_form/{id}") { b -> ConjuntoFormScreen(b.arguments?.getLong("id") ?: -1) { nav.popBackStack() } }
                     composable("manutencao_list") { ManutencaoListScreen(nav) }
@@ -66,6 +62,9 @@ class MainActivity : ComponentActivity() {
                     composable("pneus_gestao/{placa}/{tipo}") { b ->
                         val placa = b.arguments?.getString("placa") ?: ""
                         val tipo = dec(b.arguments?.getString("tipo") ?: "")
+                        val ctx = LocalContext.current
+                        val db = remember { DatabaseHelper.get(ctx) }
+                        val v = remember { db.queryAll("frota").firstOrNull { db.str(it["placa"]) == placa } }
                         PneusGestaoScreen(placa, tipo, db.str(v?.get("marca")), db.str(v?.get("modelo")),
                             onMap = { nav.navigate("pneus_map/$placa/${enc(tipo)}/0") },
                             onServicos = { nav.navigate("pneus_servicos/$placa") },
@@ -73,11 +72,7 @@ class MainActivity : ComponentActivity() {
                             onEstoque = { nav.navigate("pneus_estoque/$placa/${enc(tipo)}") },
                             onBack = { nav.popBackStack() })
                     }
-                    composable("pneus_map/{placa}/{tipo}/{sel}") { b ->
-                        PneusMapScreen(b.arguments?.getString("placa") ?: "", dec(b.arguments?.getString("tipo") ?: ""), b.arguments?.getString("sel") == "1",
-                            onResult = { v -> nav.previousBackStackEntry?.savedStateHandle?.set("resultado_pneu", v); nav.popBackStack() },
-                            onBack = { nav.popBackStack() })
-                    }
+                    composable("pneus_map/{placa}/{tipo}/{sel}") { b -> PneusMapScreen(b.arguments?.getString("placa") ?: "", dec(b.arguments?.getString("tipo") ?: ""), b.arguments?.getString("sel") == "1", onResult = { v -> nav.previousBackStackEntry?.savedStateHandle?.set("resultado_pneu", v); nav.popBackStack() }, onBack = { nav.popBackStack() }) }
                     composable("pneus_rodizio/{placa}/{tipo}") { b -> PneusRodizioScreen(b.arguments?.getString("placa") ?: "", dec(b.arguments?.getString("tipo") ?: "")) { nav.popBackStack() } }
                     composable("pneus_estoque/{placa}/{tipo}") { b -> PneusEstoqueScreen(b.arguments?.getString("placa") ?: "", dec(b.arguments?.getString("tipo") ?: "")) { nav.popBackStack() } }
                     composable("pneus_servicos/{placa}") { b -> PneusServicosScreen(b.arguments?.getString("placa") ?: "") { nav.popBackStack() } }
@@ -91,19 +86,13 @@ class MainActivity : ComponentActivity() {
                         val ctx = LocalContext.current
                         val db = remember { DatabaseHelper.get(ctx) }
                         val mm = remember { db.queryAll("frota").firstOrNull { db.str(it["placa"]) == placa }?.let { "${db.str(it["marca"])} ${db.str(it["modelo"])}".trim() } ?: "" }
-                        CombustivelArlaMenuScreen(placa, mm,
-                            onCombustivel = { nav.navigate("abastecimento_hist/COMBUSTIVEL/$placa/$id") },
-                            onArla = { nav.navigate("abastecimento_hist/ARLA/$placa/$id") },
-                            onBack = { nav.popBackStack() })
+                        CombustivelArlaMenuScreen(placa, mm, onCombustivel = { nav.navigate("abastecimento_hist/COMBUSTIVEL/$placa/$id") }, onArla = { nav.navigate("abastecimento_hist/ARLA/$placa/$id") }, onBack = { nav.popBackStack() })
                     }
                     composable("abastecimento_hist/{tipo}/{placa}/{veiculoId}") { b ->
                         val tipo = if (b.arguments?.getString("tipo") == "ARLA") TipoAbastecimento.ARLA else TipoAbastecimento.COMBUSTIVEL
                         val placa = b.arguments?.getString("placa") ?: ""
                         val id = b.arguments?.getLong("veiculoId") ?: 0L
-                        AbastecimentoHistoricoScreen(tipo, placa, id,
-                            onNovo = { nav.navigate("abastecimento_form/${tipo.name}/$placa/$id/-1") },
-                            onEditar = { r -> nav.navigate("abastecimento_form/${tipo.name}/$placa/$id/$r") },
-                            onBack = { nav.popBackStack() })
+                        AbastecimentoHistoricoScreen(tipo, placa, id, onNovo = { nav.navigate("abastecimento_form/${tipo.name}/$placa/$id/-1") }, onEditar = { r -> nav.navigate("abastecimento_form/${tipo.name}/$placa/$id/$r") }, onBack = { nav.popBackStack() })
                     }
                     composable("abastecimento_form/{tipo}/{placa}/{veiculoId}/{registroId}") { b ->
                         val tipo = if (b.arguments?.getString("tipo") == "ARLA") TipoAbastecimento.ARLA else TipoAbastecimento.COMBUSTIVEL

@@ -1,6 +1,5 @@
 package com.gerfrota.lite.ui
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -19,27 +18,8 @@ val VerdeSucesso = Color(0xFF2E7D32)
 val VermelhoAlerta = Color(0xFFC62828)
 val Fundo = Color(0xFFF5F7FA)
 
-private val DarkColorScheme = darkColorScheme(
-    primary = AzulPrimario,
-    secondary = LaranjaAccent,
-    tertiary = VerdeSucesso
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = AzulPrimario,
-    secondary = LaranjaAccent,
-    tertiary = VerdeSucesso
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-)
+private val DarkColorScheme = darkColorScheme(primary = AzulPrimario, secondary = LaranjaAccent, tertiary = VerdeSucesso)
+private val LightColorScheme = lightColorScheme(primary = AzulPrimario, secondary = LaranjaAccent, tertiary = VerdeSucesso)
 
 @Composable
 fun GerFrotaTheme(
@@ -55,11 +35,11 @@ fun GerFrotaTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    
     MaterialTheme(
         colorScheme = lightColorScheme(
             primary = AzulPrimario, secondary = LaranjaAccent,
-            surface = Fundo, background = Fundo),
+            surface = Fundo, background = Fundo
+        ),
         content = content
     )
 }

@@ -29,9 +29,7 @@ fun AcertoPeriodoScreen(motoristaId: Long, nav: NavController) {
     var ano by remember { mutableStateOf(java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)) }
     var ac by remember { mutableStateOf<RelatoriosDao.Acerto?>(null) }
     LaunchedEffect(motoristaId) {
-        withContext(Dispatchers.IO) {
-            db.queryAll("motoristas").firstOrNull { (it["id"] as? Long) == motoristaId }?.let { nome = db.str(it["nome"]) }
-        }
+        withContext(Dispatchers.IO) { db.queryAll("motoristas").firstOrNull { (it["id"] as? Long) == motoristaId }?.let { nome = db.str(it["nome"]) } }
     }
     LaunchedEffect(motoristaId, mes, ano) {
         withContext(Dispatchers.IO) { ac = RelatoriosDao.acertoMotorista(db, motoristaId, mes, ano) }
@@ -44,17 +42,14 @@ fun AcertoPeriodoScreen(motoristaId: Long, nav: NavController) {
             SeletorMesAno(mes, ano, { mes = it }, { ano = it })
             ac?.let { a ->
                 Spacer(Modifier.height(16.dp))
-                CardDestaque("SALDO DO ACERTO", DatabaseHelper.fmtBRL(a.saldo),
-                    if (a.saldo >= 0) Color(0xFF2E7D32) else Color(0xFFC62828), Icons.Default.AccountBalanceWallet)
+                CardDestaque("SALDO DO ACERTO", DatabaseHelper.fmtBRL(a.saldo), if (a.saldo >= 0) Color(0xFF2E7D32) else Color(0xFFC62828), Icons.Default.AccountBalanceWallet)
                 Spacer(Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     CardSecundario("Comissões", DatabaseHelper.fmtBRL(a.comissoes), Color(0xFF1976D2), Modifier.weight(1f))
                     CardSecundario("Adiantamentos", DatabaseHelper.fmtBRL(a.adiantamentos), Color(0xFFC62828), Modifier.weight(1f))
                 }
                 Spacer(Modifier.height(24.dp))
-                Button(onClick = { nav.navigate("acerto_contas/$motoristaId/0/0") }, modifier = Modifier.fillMaxWidth()) {
-                    Text("FECHAR ACERTO DO PERÍODO")
-                }
+                Button(onClick = { nav.navigate("acerto_contas/$motoristaId/0/0") }, modifier = Modifier.fillMaxWidth()) { Text("FECHAR ACERTO DO PERÍODO") }
             }
         }
     }
