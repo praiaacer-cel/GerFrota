@@ -124,6 +124,7 @@ fun MotoristaFormScreen(id: Long, onBack: () -> Unit) {
     }
 }
 
+// ✅ ESTA FUNÇÃO É OBRIGATÓRIA — foi ela que faltou no seu arquivo
 @Composable
 fun CampoForm(label: String, value: String, modifier: Modifier = Modifier, on: (String) -> Unit) {
     OutlinedTextField(value, on, label = { Text(label) }, modifier = modifier)
