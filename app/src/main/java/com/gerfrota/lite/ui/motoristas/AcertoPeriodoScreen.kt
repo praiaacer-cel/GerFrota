@@ -1,9 +1,6 @@
 package com.gerfrota.lite.ui.motoristas
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalanceWallet
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -12,12 +9,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.gerfrota.lite.data.DatabaseHelper
-import com.gerfrota.lite.data.RelatoriosDao
-import com.gerfrota.lite.ui.relatorios.CardDestaque
-import com.gerfrota.lite.ui.relatorios.CardSecundario
-import com.gerfrota.lite.ui.relatorios.SeletorMesAno
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

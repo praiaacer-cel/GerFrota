@@ -11,13 +11,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.gerfrota.lite.ai.ChapaIAViewModel
+import com.gerfrota.lite.ai.ChapaIaScreen
 import com.gerfrota.lite.data.DatabaseHelper
 import com.gerfrota.lite.services.MigracaoDados
-import com.gerfrota.lite.ui.chapa.ChapaIaScreen
 import com.gerfrota.lite.ui.combustivel.*
 import com.gerfrota.lite.ui.conjuntos.*
 import com.gerfrota.lite.ui.frota.*
 import com.gerfrota.lite.ui.login.LoginScreen
+import com.gerfrota.lite.ui.GerFrotaTheme
 import com.gerfrota.lite.ui.manutencao.*
 import com.gerfrota.lite.ui.motoristas.*
 import com.gerfrota.lite.ui.pneus.*
@@ -105,17 +106,17 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("pneus_gestao/{placa}/{tipo}") { b ->
-                        val placa = b.arguments?.getString("placa") ?: ""
-                        val tipo = dec(b.arguments?.getString("tipo") ?: "")
-                        PneusGestaoScreen(
-                            placa, tipo,
-                            onMap = { nav.navigate("pneus_map/$placa/${enc(tipo)}/0") },
-                            onServicos = { nav.navigate("pneus_servicos/$placa") },
-                            onRodizio = { nav.navigate("pneus_rodizio/$placa/${enc(tipo)}") },
-                            onEstoque = { nav.navigate("pneus_estoque/$placa/${enc(tipo)}") },
-                            onBack = { nav.popBackStack() }
-                        )
-                    }
+    val placa = b.arguments?.getString("placa") ?: ""
+    val tipo = dec(b.arguments?.getString("tipo") ?: "")
+    PneusGestaoScreen(
+        placa, tipo,
+        onMap = { nav.navigate("pneus_map/$placa/${enc(tipo)}/0") },
+        onServicos = { nav.navigate("pneus_servicos/$placa") },
+        onRodizio = { nav.navigate("pneus_rodizio/$placa/${enc(tipo)}") },
+        onEstoque = { nav.navigate("pneus_estoque/$placa/${enc(tipo)}") },
+        onBack = { nav.popBackStack() }
+    )
+}
                     composable("pneus_map/{placa}/{tipo}/{sel}") { b ->
                         PneusMapScreen(
                             b.arguments?.getString("placa") ?: "",
