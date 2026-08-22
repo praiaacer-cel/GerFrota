@@ -40,18 +40,14 @@ class MainActivity : ComponentActivity() {
                 fun enc(s: String) = URLEncoder.encode(s, "UTF-8")
                 fun dec(s: String) = URLDecoder.decode(s, "UTF-8")
                 NavHost(nav, if (prefs.getBoolean("logado", false)) "dashboard" else "login") {
-                    composable("login") { 
-                        LoginScreen(prefs) { 
-                            nav.navigate("dashboard") { popUpTo("login") { inclusive = true } } 
-                        } 
-                    }
+                    composable("login") { LoginScreen(prefs) { nav.navigate("dashboard") { popUpTo("login") { inclusive = true } } } }
                     composable("dashboard") { DashboardScreen(nav::navigate) }
                     composable("chapa") { ChapaIaScreen(chapaVm) { nav.popBackStack() } }
                     composable("frota") { FrotaListScreen(nav) }
                     composable("frota_detail/{id}") { b -> FrotaDetailScreen(b.arguments?.getLong("id") ?: -1, nav) { nav.popBackStack() } }
                     composable("frota_form/{id}") { b -> FrotaFormScreen(b.arguments?.getLong("id") ?: -1) { nav.popBackStack() } }
                     composable("motoristas") { MotoristasListScreen(nav) }
-                    composable("motorista_detail/{id}") { b -> MotoristaDetailScreen(b.arguments?.getLong("id") ?: -1, nav) }
+                    composable("motorista_detail/{id}") { b -> MotoristaDetailScreen(b.arguments?.getLong("id") ?: -1) { nav.popBackStack() } }
                     composable("adiantamentos/{id}") { b -> AdiantamentosScreen(b.arguments?.getLong("id") ?: -1, nav) }
                     composable("acerto_periodo/{id}") { b -> AcertoPeriodoScreen(b.arguments?.getLong("id") ?: -1, nav) }
                     composable("acerto_contas/{id}/{ini}/{fim}") { b -> AcertoContasScreen(b.arguments?.getLong("id") ?: -1, b.arguments?.getLong("ini") ?: 0, b.arguments?.getLong("fim") ?: 0, nav) }
