@@ -51,8 +51,8 @@ class MainActivity : ComponentActivity() {
                     composable("chapa") { ChapaIaScreen(chapaVm) { nav.popBackStack() } }
                     composable("frota") { FrotaListScreen(nav) }
                     composable("frota_detail/{id}") { b ->
-                        FrotaDetailScreen(b.arguments?.getLong("id") ?: -1, nav) { nav.popBackStack() }
-                    }
+    FrotaDetailScreen(b.arguments?.getLong("id") ?: -1) { nav.popBackStack() }
+}
                     composable("frota_form/{id}") { b ->
                         FrotaFormScreen(b.arguments?.getLong("id") ?: -1) { nav.popBackStack() }
                     }
@@ -105,21 +105,17 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("pneus_gestao/{placa}/{tipo}") { b ->
-                        val placa = b.arguments?.getString("placa") ?: ""
-                        val tipo = dec(b.arguments?.getString("tipo") ?: "")
-                        val ctx = LocalContext.current
-                        val db = remember { DatabaseHelper.get(ctx) }
-                        val v = remember { db.queryAll("frota").firstOrNull { db.str(it["placa"]) == placa } }
-                        PneusGestaoScreen(
-                            placa, tipo,
-                            db.str(v?.get("marca")), db.str(v?.get("modelo")),
-                            onMap = { nav.navigate("pneus_map/$placa/${enc(tipo)}/0") },
-                            onServicos = { nav.navigate("pneus_servicos/$placa") },
-                            onRodizio = { nav.navigate("pneus_rodizio/$placa/${enc(tipo)}") },
-                            onEstoque = { nav.navigate("pneus_estoque/$placa/${enc(tipo)}") },
-                            onBack = { nav.popBackStack() }
-                        )
-                    }
+    val placa = b.arguments?.getString("placa") ?: ""
+    val tipo = dec(b.arguments?.getString("tipo") ?: "")
+    PneusGestaoScreen(
+        placa, tipo,
+        onMap = { nav.navigate("pneus_map/$placa/${enc(tipo)}/0") },
+        onServicos = { nav.navigate("pneus_servicos/$placa") },
+        onRodizio = { nav.navigate("pneus_rodizio/$placa/${enc(tipo)}") },
+        onEstoque = { nav.navigate("pneus_estoque/$placa/${enc(tipo)}") },
+        onBack = { nav.popBackStack() }
+    )
+}
                     composable("pneus_map/{placa}/{tipo}/{sel}") { b ->
                         PneusMapScreen(
                             b.arguments?.getString("placa") ?: "",
