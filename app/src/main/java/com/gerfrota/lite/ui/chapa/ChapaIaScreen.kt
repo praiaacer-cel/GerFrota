@@ -1,4 +1,5 @@
 package com.gerfrota.lite.ui.chapa
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -15,6 +16,7 @@ import com.gerfrota.lite.ai.ChapaIAViewModel
 @Composable
 fun ChapaIaScreen(vm: ChapaIAViewModel, onBack: () -> Unit) {
     var texto by remember { mutableStateOf("") }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -24,12 +26,19 @@ fun ChapaIaScreen(vm: ChapaIAViewModel, onBack: () -> Unit) {
         }
     ) { pad ->
         Column(Modifier.padding(pad).padding(16.dp)) {
-            Text("Assistente offline da frota. Escreva sua pergunta e toque em ENVIAR.")
-            Spacer(Modifier.height(16.dp))
+            Text("Assistente offline da frota. Escreva sua pergunta e toque em enviar.")
+            Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(texto, { texto = it }, label = { Text("Pergunta") }, modifier = Modifier.weight(1f))
+                OutlinedTextField(
+                    value = texto,
+                    onValueChange = { texto = it },
+                    label = { Text("Pergunta") },
+                    modifier = Modifier.weight(1f)
+                )
                 Spacer(Modifier.width(8.dp))
-                Button(onClick = { vm.send(texto); texto = "" }) { Icon(Icons.Default.Send, null) }
+                FilledIconButton(onClick = { vm.send(texto); texto = "" }) {
+                    Icon(Icons.Default.Send, null)
+                }
             }
         }
     }
