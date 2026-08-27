@@ -18,7 +18,7 @@ import com.gerfrota.lite.ui.combustivel.*
 import com.gerfrota.lite.ui.conjuntos.*
 import com.gerfrota.lite.ui.frota.*
 import com.gerfrota.lite.ui.login.LoginScreen
-import com.gerfrota.lite.ui.GerFrotaTheme
+import com.gerfrota.lite.ui.chapa.ChapaIaScreen
 import com.gerfrota.lite.ui.manutencao.*
 import com.gerfrota.lite.ui.motoristas.*
 import com.gerfrota.lite.ui.pneus.*
