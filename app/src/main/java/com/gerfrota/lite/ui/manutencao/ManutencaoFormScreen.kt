@@ -93,7 +93,7 @@ fun ManutencaoFormScreen(placa: String, tipo: String, manutencaoId: Long, pneuId
     Scaffold(topBar = { TopAppBar(title = { Text("CADASTRO DE MANUTENÇÃO") }, navigationIcon = { IconButton(onClick = { nav.popBackStack() }) { Icon(Icons.Default.ArrowBack, null) } }) }) { pad ->
         Column(Modifier.padding(pad).padding(14.dp).verticalScroll(rememberScrollState())) {
             Row { 
-    Campo("Data", data, { data = it }, Modifier.weight(1f))
+    Campo("Data", data, Modifier.weight(1f)) { data = it }
     Spacer(Modifier.width(8.dp))
     Campo("KM", km, { km = it }, Modifier.weight(1f)) 
 }
