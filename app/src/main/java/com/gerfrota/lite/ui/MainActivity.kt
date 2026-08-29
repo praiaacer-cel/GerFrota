@@ -106,17 +106,17 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("pneus_gestao/{placa}/{tipo}") { b ->
-    val placa = b.arguments?.getString("placa") ?: ""
-    val tipo = dec(b.arguments?.getString("tipo") ?: "")
-    PneusGestaoScreen(
-        placa, tipo,
-        onMap = { nav.navigate("pneus_map/$placa/${enc(tipo)}/0") },
-        onServicos = { nav.navigate("pneus_servicos/$placa") },
-        onRodizio = { nav.navigate("pneus_rodizio/$placa/${enc(tipo)}") },
-        onEstoque = { nav.navigate("pneus_estoque/$placa/${enc(tipo)}") },
-        onBack = { nav.popBackStack() }
-    )
-}
+                        val placa = b.arguments?.getString("placa") ?: ""
+                        val tipo = dec(b.arguments?.getString("tipo") ?: "")
+                        PneusGestaoScreen(
+                            placa, tipo,
+                            onMap = { nav.navigate("pneus_map/$placa/${enc(tipo)}/0") },
+                            onServicos = { nav.navigate("pneus_servicos/$placa") },
+                            onRodizio = { nav.navigate("pneus_rodizio/$placa/${enc(tipo)}") },
+                            onEstoque = { nav.navigate("pneus_estoque/$placa/${enc(tipo)}") },
+                            onBack = { nav.popBackStack() }
+                        )
+                    }
                     composable("pneus_map/{placa}/{tipo}/{sel}") { b ->
                         PneusMapScreen(
                             b.arguments?.getString("placa") ?: "",
