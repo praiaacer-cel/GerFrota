@@ -135,5 +135,18 @@ fun Campo(
         modifier = modifier
     )
 }
-@OptIn(ExperimentalMaterial3Api::class) @Composable fun DropdownSistema(value: String?, opcoes: List<String>, on: (String) -> Unit) { var exp by remember { mutableStateOf(false) }; ExposedDropdownMenuBox(expanded = exp, onExpandedChange = { exp = it }) { OutlinedTextField(value ?: "", {}, readOnly = true, label = { Text("SISTEMA") }, modifier = Modifier.fillMaxWidth().menuAnchor(), trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(exp) }); ExposedDropdownMenu(exp, { exp = false }) { opcoes.forEach { o -> DropdownMenuItem({ Text(o) }, { on(o) }) } } } }
+@OptIn(ExperimentalMaterial3Api::class) 
+@Composable fun DropdownSistema(value: String?, opcoes: List<String>, on: (String) -> Unit) 
+{ var exp by remember { mutableStateOf(false) }; 
+    ExposedDropdownMenuBox(expanded = exp, onExpandedChange = { exp = it }) 
+    { OutlinedTextField(value ?: "", {}, readOnly = true, label = { Text("SISTEMA") }, 
+                        modifier = Modifier.fillMaxWidth().menuAnchor(), 
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(exp) }); 
+        ExposedDropdownMenu(exp, { exp = false }) 
+        { opcoes.forEach { o -> DropdownMenuItem({ Text(o) }, 
+                                                 { on(o) })
+        }
+        }
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class) @Composable fun DropdownSimples(label: String, value: String?, opcoes: List<String>, on: (String) -> Unit) { var exp by remember { mutableStateOf(false) }; ExposedDropdownMenuBox(expanded = exp, onExpandedChange = { exp = it }) { OutlinedTextField(value ?: "", {}, readOnly = true, label = { Text(label) }, modifier = Modifier.fillMaxWidth().menuAnchor(), trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(exp) }); ExposedDropdownMenu(exp, { exp = false }) { opcoes.forEach { o -> DropdownMenuItem({ Text(o) }, { on(o) }) } } } }
