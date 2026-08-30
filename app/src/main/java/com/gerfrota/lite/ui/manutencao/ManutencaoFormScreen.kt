@@ -122,8 +122,31 @@ fun ManutencaoFormScreen(placa: String, tipo: String, manutencaoId: Long, pneuId
 }
 
 @Composable
-fun Campo(label: String, value: String, modifier: Modifier = Modifier, on: (String) -> Unit) {
-    OutlinedTextField(value, on, label = { Text(label) }, modifier = modifier)
+fun Campo(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    on: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = on,
+        label = { Text(label) },
+        modifier = modifier
+    )
 }
-@OptIn(ExperimentalMaterial3Api::class) @Composable fun DropdownSistema(value: String?, opcoes: List<String>, on: (String) -> Unit) { var exp by remember { mutableStateOf(false) }; ExposedDropdownMenuBox(expanded = exp, onExpandedChange = { exp = it }) { OutlinedTextField(value ?: "", {}, readOnly = true, label = { Text("SISTEMA") }, modifier = Modifier.fillMaxWidth().menuAnchor(), trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(exp) }); ExposedDropdownMenu(exp, { exp = false }) { opcoes.forEach { o -> DropdownMenuItem({ Text(o) }, { on(o) }) } } } }
+@OptIn(ExperimentalMaterial3Api::class) 
+@Composable fun DropdownSistema(value: String?, opcoes: List<String>, on: (String) -> Unit) 
+{ var exp by remember { mutableStateOf(false) }; 
+    ExposedDropdownMenuBox(expanded = exp, onExpandedChange = { exp = it }) 
+    { OutlinedTextField(value ?: "", {}, readOnly = true, label = { Text("SISTEMA") }, 
+                        modifier = Modifier.fillMaxWidth().menuAnchor(), 
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(exp) }); 
+        ExposedDropdownMenu(exp, { exp = false }) 
+        { opcoes.forEach { o -> DropdownMenuItem({ Text(o) }, 
+                                                 { on(o) })
+        }
+        }
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class) @Composable fun DropdownSimples(label: String, value: String?, opcoes: List<String>, on: (String) -> Unit) { var exp by remember { mutableStateOf(false) }; ExposedDropdownMenuBox(expanded = exp, onExpandedChange = { exp = it }) { OutlinedTextField(value ?: "", {}, readOnly = true, label = { Text(label) }, modifier = Modifier.fillMaxWidth().menuAnchor(), trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(exp) }); ExposedDropdownMenu(exp, { exp = false }) { opcoes.forEach { o -> DropdownMenuItem({ Text(o) }, { on(o) }) } } } }
